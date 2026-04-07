@@ -32,7 +32,6 @@ jobs:
     steps:
       - checkout
       - node/install:
-          install-npm: true
           node-version: '22.0'
       - run: npm ci
       - run: npm run test:e2e
