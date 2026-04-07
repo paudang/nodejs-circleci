@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      - db
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=demo
+      - DB_PORT=3306
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: demo
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - ./flyway/sql:/docker-entrypoint-initdb.d
+  flyway:
+    image: flyway/flyway
+    command: -connectRetries=60 migrate
+    volumes:
+      - ./flyway/sql:/flyway/sql
+    environment:
+      FLYWAY_URL: jdbc:mysql://db:3306/demo
+      FLYWAY_USER: root
+      FLYWAY_PASSWORD: root
+    depends_on:
+      - db
+volumes:
+  mysql_data:

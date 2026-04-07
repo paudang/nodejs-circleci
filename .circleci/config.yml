@@ -1,0 +1,65 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:22.0
+  machine-executor:
+    machine:
+      image: ubuntu-2204:2022.04.2
+
+jobs:
+  lint:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - run: npm run lint
+
+  unit_test:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - run: npm run test:coverage
+
+  e2e_test:
+    executor: machine-executor
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y nodejs npm
+      - run: npm ci
+      - run: npm run test:e2e
+
+
+
+  build:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - run: npm run build --if-present
+
+workflows:
+  build_and_test:
+    jobs:
+      - lint
+      - unit_test:
+          requires:
+            - lint
+      - e2e_test:
+          requires:
+            - unit_test
+
+      - build:
+          requires:
+            - e2e_test
+
