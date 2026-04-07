@@ -10,15 +10,17 @@ You are an expert working on **nodejs-circleci**.
 
 ## Tech Stack
 - **Language**: TypeScript
-- **Architecture**: MVC
-- **Database**: MySQL
-- **Communication Protocol**: REST APIs
+- **Architecture**: Clean Architecture
+- **Database**: MongoDB
+- **Communication Protocol**: Kafka
+- **Caching**: Redis
 
 ## High-Level Architecture
-We use the MVC (Model-View-Controller) pattern.
-- `src/models`: Database schemas/models.
-- `src/controllers`: Handling incoming requests and implementing business logic.
-- `src/routes`: API endpoints mapped to controllers.
+We use Clean Architecture. The project separates concerns into:
+- `src/domain`: Core entities and rules. No external dependencies.
+- `src/usecases`: Application business logic.
+- `src/interfaces`: Adapters (Controllers, Routes) that mediate between the outside world and use cases.
+- `src/infrastructure`: External tools (Database, Web Server, Config, Caching).
 
 ## Core Standards
 1. **Testing**: We enforce > 80% coverage. Tests use Jest and the AAA (Arrange, Act, Assert) pattern.
