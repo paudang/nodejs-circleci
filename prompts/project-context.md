@@ -3,16 +3,16 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: nodejs-circleci
-You are an expert working on **nodejs-circleci**.
+**Project Name**: nodejs-zxczx
+You are an expert working on **nodejs-zxczx**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
 - **Language**: TypeScript
 - **Architecture**: Clean Architecture
-- **Database**: MongoDB
-- **Communication Protocol**: Kafka
+- **Database**: PostgreSQL
+- **Communication Protocol**: GraphQL
 - **Caching**: Redis
 
 ## High-Level Architecture
@@ -29,4 +29,4 @@ We use Clean Architecture. The project separates concerns into:
    - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the nodejs-circleci?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the nodejs-zxczx?"

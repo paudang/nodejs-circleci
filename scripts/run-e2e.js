@@ -3,14 +3,21 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 // Set a specific port for E2E tests to avoid collisions with local development
-process.env.PORT = process.env.PORT || '3001';
-const TEST_PORT = process.env.PORT;
+const TEST_PORT = process.env.PORT || '3001';
 const WAIT_ON_HOST = process.env.WAIT_ON_HOST || '127.0.0.1';
 
 const execute = (command) => {
   console.log(`\n> ${command}`);
   // Run commands from the project root instead of the scripts folder
-  execSync(command, { stdio: 'inherit', cwd: path.resolve(__dirname, '../') });
+  execSync(command, {
+    stdio: 'inherit',
+    cwd: path.resolve(__dirname, '../'),
+    env: {
+      ...process.env,
+      PORT: TEST_PORT,
+      DB_PORT: process.env.DB_PORT || '3306',
+    },
+  });
 };
 
 let composeCmd = 'docker-compose';
@@ -43,14 +50,16 @@ try {
     execute(`${composeCmd} up -d --build`);
     currentProcessStartedDocker = true;
 
-    console.log('Waiting for application healthcheck to turn green (300s timeout)...');
+    console.log(`Waiting for application healthcheck to turn green (420s timeout)...`);
     try {
-      // Using wait-on to poll the universal /health endpoint injected into all architectures
-      execute(`npx wait-on http-get://${WAIT_ON_HOST}:${TEST_PORT}/health -t 300000`);
+      // Using WAIT_ON_HOST to allow containerized CI to hit host ports (e.g. host.docker.internal)
+      execute(`npx wait-on http-get://${WAIT_ON_HOST}:${TEST_PORT}/health -t 420000`);
       console.log('Infrastructure is healthy!');
     } catch (e) {
-      console.error('Healthcheck timed out! Printing infrastructure logs for debugging:');
-      execute(`${composeCmd} logs`);
+      console.error('\n❌ Healthcheck timed out! Printing infrastructure logs for debugging:');
+      console.error('------------------------------------------------------------');
+      execute(`${composeCmd} logs --tail=100`);
+      console.error('------------------------------------------------------------');
       throw e;
     }
   }

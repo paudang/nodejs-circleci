@@ -1,5 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
-import { HTTP_STATUS } from '@/utils/httpCodes';
 import { ERROR_MESSAGES } from '@/utils/errorMessages';
 import { UserController } from '@/interfaces/controllers/userController';
 import CreateUser from '@/usecases/createUser';
@@ -14,15 +12,6 @@ jest.mock('@/usecases/getAllUsers');
 jest.mock('@/usecases/updateUser');
 jest.mock('@/usecases/deleteUser');
 jest.mock('@/infrastructure/log/logger');
-jest.mock('@/infrastructure/messaging/kafkaClient', () => ({
-  kafkaService: {
-    sendMessage: jest.fn().mockResolvedValue(undefined),
-  },
-  KafkaService: jest.fn().mockImplementation(() => ({
-    sendMessage: jest.fn().mockResolvedValue(undefined),
-  })),
-}));
-const { kafkaService } = require('@/infrastructure/messaging/kafkaClient');
 
 describe('UserController (Clean Architecture)', () => {
   let userController: UserController;
@@ -30,9 +19,6 @@ describe('UserController (Clean Architecture)', () => {
   let mockGetAllUsersUseCase: jest.Mocked<GetAllUsers>;
   let mockUpdateUserUseCase: jest.Mocked<UpdateUser>;
   let mockDeleteUserUseCase: jest.Mocked<DeleteUser>;
-  let mockRequest: Partial<Request>;
-  let mockResponse: Partial<Response>;
-  let mockNext: NextFunction;
 
   beforeEach(() => {
     // Clear all mocks
@@ -46,15 +32,6 @@ describe('UserController (Clean Architecture)', () => {
       .instances[0] as jest.Mocked<GetAllUsers>;
     mockUpdateUserUseCase = (UpdateUser as jest.Mock).mock.instances[0] as jest.Mocked<UpdateUser>;
     mockDeleteUserUseCase = (DeleteUser as jest.Mock).mock.instances[0] as jest.Mocked<DeleteUser>;
-
-    mockRequest = {
-      body: {},
-    };
-    mockResponse = {
-      json: jest.fn(),
-      status: jest.fn().mockReturnThis(),
-    };
-    mockNext = jest.fn();
   });
 
   describe('getUsers', () => {
@@ -64,10 +41,10 @@ describe('UserController (Clean Architecture)', () => {
       mockGetAllUsersUseCase.execute.mockResolvedValue(usersMock);
 
       // Act
-      await userController.getUsers(mockRequest as Request, mockResponse as Response, mockNext);
+      const result = await userController.getUsers();
 
       // Assert
-      expect(mockResponse.json).toHaveBeenCalledWith(usersMock);
+      expect(result).toEqual(usersMock);
       expect(mockGetAllUsersUseCase.execute).toHaveBeenCalled();
     });
 
@@ -77,8 +54,7 @@ describe('UserController (Clean Architecture)', () => {
       mockGetAllUsersUseCase.execute.mockRejectedValue(error);
 
       // Act & Assert
-      await userController.getUsers(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(userController.getUsers()).rejects.toThrow(error);
     });
 
     it('should handle non-Error objects in catch block', async () => {
@@ -87,8 +63,7 @@ describe('UserController (Clean Architecture)', () => {
       mockGetAllUsersUseCase.execute.mockRejectedValue(error);
 
       // Act & Assert
-      await userController.getUsers(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(userController.getUsers()).rejects.toEqual(error);
     });
   });
 
@@ -96,20 +71,16 @@ describe('UserController (Clean Architecture)', () => {
     it('should successfully create a new user (Happy Path)', async () => {
       // Arrange
       const payload = { name: 'Alice', email: 'alice@example.com' };
-      mockRequest.body = payload;
+      const dataArg = payload;
       const expectedUser = { id: '1', ...payload };
 
       mockCreateUserUseCase.execute.mockResolvedValue(expectedUser);
 
       // Act
-      await userController.createUser(mockRequest as Request, mockResponse as Response, mockNext);
+      const result = await userController.createUser(dataArg);
 
       // Assert
-      const { kafkaService } = require('@/infrastructure/messaging/kafkaClient');
-      expect(kafkaService.sendMessage).toHaveBeenCalled();
-      expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.CREATED);
-
-      expect(mockResponse.json).toHaveBeenCalledWith(expectedUser);
+      expect(result).toEqual(expectedUser);
       expect(mockCreateUserUseCase.execute).toHaveBeenCalledWith(payload.name, payload.email);
     });
 
@@ -117,26 +88,24 @@ describe('UserController (Clean Architecture)', () => {
       // Arrange
       const error = new Error('Creation Error');
       const payload = { name: 'Bob', email: 'bob@example.com' };
-      mockRequest.body = payload;
+      const dataArg = payload;
 
       mockCreateUserUseCase.execute.mockRejectedValue(error);
 
       // Act & Assert
-      await userController.createUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(userController.createUser(dataArg)).rejects.toThrow(error);
     });
 
     it('should handle non-Error objects in catch block when creation fails', async () => {
       // Arrange
       const error = 'Creation String Error';
       const payload = { name: 'Bob', email: 'bob@example.com' };
-      mockRequest.body = payload;
+      const dataArg = payload;
 
       mockCreateUserUseCase.execute.mockRejectedValue(error);
 
       // Act & Assert
-      await userController.createUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(userController.createUser(dataArg)).rejects.toEqual(error);
     });
   });
 
@@ -145,31 +114,28 @@ describe('UserController (Clean Architecture)', () => {
       // Arrange
       const id = '1';
       const payload = { name: 'Alice Updated' };
-      mockRequest.params = { id };
-      mockRequest.body = payload;
+      const idArg = id;
+      const dataArg = payload;
       const expectedUser = { id, name: 'Alice Updated', email: 'alice@example.com' };
 
       mockUpdateUserUseCase.execute.mockResolvedValue(expectedUser as any);
 
       // Act
-      await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockResponse.json).toHaveBeenCalledWith(expectedUser);
+      const result = await userController.updateUser(idArg, dataArg);
+      expect(result).toEqual(expectedUser);
 
-      const { kafkaService } = require('@/infrastructure/messaging/kafkaClient');
-      expect(kafkaService.sendMessage).toHaveBeenCalled();
       expect(mockUpdateUserUseCase.execute).toHaveBeenCalledWith(id, payload);
     });
 
     it('should handle 404/errors when user not found or update fails', async () => {
       // Arrange
       const id = '999';
-      mockRequest.params = { id };
-      mockRequest.body = { name: 'Fail' };
+      const idArg = id;
+      const dataArg = { name: 'Fail' };
       mockUpdateUserUseCase.execute.mockResolvedValue(null);
-
-      // Act
-      await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
+      await expect(userController.updateUser(idArg, dataArg)).rejects.toThrow(
+        ERROR_MESSAGES.USER_NOT_FOUND,
+      );
     });
 
     it('should handle database errors during update (Error Handling)', async () => {
@@ -177,9 +143,7 @@ describe('UserController (Clean Architecture)', () => {
       const id = '1';
       const error = new Error('Database Error');
       mockUpdateUserUseCase.execute.mockRejectedValue(error);
-      mockRequest.params = { id };
-      await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(userController.updateUser(id, { name: 'Fail' })).rejects.toThrow(error);
     });
   });
 
@@ -187,25 +151,21 @@ describe('UserController (Clean Architecture)', () => {
     it('should successfully delete a user (Happy Path)', async () => {
       // Arrange
       const id = '1';
-      mockRequest.params = { id };
+      const idArg = id;
       mockDeleteUserUseCase.execute.mockResolvedValue(true);
 
       // Act
-      await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.OK);
+      const result = await userController.deleteUser(idArg);
+      expect(result).toBe(true);
 
-      const { kafkaService } = require('@/infrastructure/messaging/kafkaClient');
-      expect(kafkaService.sendMessage).toHaveBeenCalled();
       expect(mockDeleteUserUseCase.execute).toHaveBeenCalledWith(id);
     });
 
     it('should throw error if user not found during deletion (Error Handling)', async () => {
       // Arrange
       const id = '999';
-      mockRequest.params = { id };
       mockDeleteUserUseCase.execute.mockResolvedValue(false);
-      await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
+      await expect(userController.deleteUser(id)).rejects.toThrow(ERROR_MESSAGES.USER_NOT_FOUND);
     });
 
     it('should handle database errors during deletion (Error Handling)', async () => {
@@ -213,9 +173,7 @@ describe('UserController (Clean Architecture)', () => {
       const id = '1';
       const error = new Error('Database Error');
       mockDeleteUserUseCase.execute.mockRejectedValue(error);
-      mockRequest.params = { id };
-      await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(userController.deleteUser(id)).rejects.toThrow(error);
     });
   });
 
@@ -223,9 +181,9 @@ describe('UserController (Clean Architecture)', () => {
     it('should handle database errors during creation (Error Handling)', async () => {
       const error = new Error('Database Error');
       mockCreateUserUseCase.execute.mockRejectedValue(error);
-      mockRequest.body = { name: 'Alice', email: 'alice@example.com' };
-      await userController.createUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockNext).toHaveBeenCalledWith(error);
+      await expect(
+        userController.createUser({ name: 'Alice', email: 'alice@example.com' }),
+      ).rejects.toThrow(error);
     });
   });
 });

@@ -1,6 +1,6 @@
 # Troubleshoot Error
 
-I am encountering an error in the nodejs-circleci application. Please help me diagnose and fix it based on our architectural standards.
+I am encountering an error in the nodejs-zxczx application. Please help me diagnose and fix it based on our architectural standards.
 
 ## The Error Log / Issue Description
 \`\`\`
