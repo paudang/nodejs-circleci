@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: nodejs-zxczx API
+  title: nodejs-zz2 API
   version: 1.0.0
-  description: API documentation for nodejs-zxczx
+  description: API documentation for nodejs-zz2
 servers:
   - url: http://localhost:3000
     description: Local Server
