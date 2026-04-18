@@ -1,24 +1,41 @@
 import { env } from '@/config/env';
 import express from 'express';
-import type { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import rateLimit from 'express-rate-limit';
-import logger from '@/utils/logger';
+import logger from '@/infrastructure/log/logger';
 import morgan from 'morgan';
 import { errorMiddleware } from '@/utils/errorMiddleware';
 import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
-import healthRoutes from '@/routes/healthRoute';
-import apiRoutes from '@/routes/api';
-import swaggerUi from 'swagger-ui-express';
-import swaggerSpecs from '@/config/swagger';
+import healthRoutes from '@/interfaces/routes/healthRoute';
+
+import authRoutes from '@/interfaces/routes/authRoutes';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@as-integrations/express4';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { unwrapResolverError } from '@apollo/server/errors';
+import { ApiError } from '@/errors/ApiError';
+import { typeDefs, resolvers } from '@/interfaces/graphql';
+import { gqlContext, MyContext } from '@/interfaces/graphql/context';
 
 const app = express();
 const port = env.PORT;
 
 // Security Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: [`'self'`, 'data:', 'apollo-server-landing-page.cdn.apollographql.com'],
+        scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+        manifestSrc: [`'self'`, 'apollo-server-landing-page.cdn.apollographql.com'],
+        frameSrc: [`'self'`, 'sandbox.embed.apollographql.com'],
+      },
+    },
+  }),
+);
 app.use(hpp());
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
 const limiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 100 });
@@ -26,25 +43,43 @@ app.use(limiter);
 
 app.use(express.json());
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-// View Engine Setup
-import path from 'path';
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
-app.use(express.static(path.join(__dirname, '../public')));
-app.use('/api', apiRoutes);
-app.get('/', (req: Request, res: Response) => {
-  res.render('index', {
-    projectName: 'NodeJS Service',
-    architecture: 'MVC',
-    database: 'MySQL',
-    communication: 'REST APIs',
-  });
-});
+
+app.use('/api/auth', authRoutes);
 app.use('/health', healthRoutes);
 
 // Start Server Logic
 const startServer = async () => {
+  // GraphQL Setup
+  const apolloServer = new ApolloServer<MyContext>({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
+    formatError: (formattedError, error) => {
+      const originalError = unwrapResolverError(error);
+      if (originalError instanceof ApiError) {
+        return {
+          ...formattedError,
+          message: originalError.message,
+          extensions: {
+            ...formattedError.extensions,
+            code: originalError.statusCode.toString(),
+          },
+        };
+      }
+
+      logger.error(`GraphQL Error: ${formattedError.message}`);
+      if (
+        originalError instanceof Error &&
+        originalError.stack &&
+        process.env.NODE_ENV === 'development'
+      ) {
+        logger.error(originalError.stack);
+      }
+      return formattedError;
+    },
+  });
+  await apolloServer.start();
+  app.use('/graphql', expressMiddleware(apolloServer, { context: gqlContext }));
   app.use(errorMiddleware);
   const server = app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
@@ -54,14 +89,14 @@ const startServer = async () => {
 };
 
 // Database Sync
-import sequelize from '@/config/database';
+import sequelize from '@/infrastructure/database/database';
+
 const syncDatabase = async () => {
   let retries = 30;
   while (retries) {
     try {
       await sequelize.sync();
       logger.info('Database synced');
-      // Start Server after DB is ready
       await startServer();
       break;
     } catch (error) {

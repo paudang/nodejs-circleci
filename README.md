@@ -1,11 +1,11 @@
-# nodejs-zz2
+# nodejs-circleci
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
 ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
 
 
-A production-ready Node.js microservice generated with **MVC** and **MySQL**. 
+A production-ready Node.js microservice generated with **Clean Architecture** and **PostgreSQL**. 
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
 
 ---
@@ -15,7 +15,7 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 1.  **Initialize Git**: `git init` (Required for Husky hooks and security gates).
 2.  **Install Dependencies**: `npm install`.
 3.  **Configure Environment**: Copy `.env.example` to `.env`.
-4.  **Start Infrastructure**: `docker-compose up -d db redis`.
+4.  **Start Infrastructure**: `docker-compose up -d db`.
 5.  **Run Development**: `npm run dev`.
 6.  **Verify Standards**: `npm run lint` and `npm test` (Enforce 80% coverage).
 7.  **Build & Deploy**: `npm run build` followed by `npm run deploy` (via PM2).
@@ -24,8 +24,9 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 
 ## 🚀 Key Features
 
--   **Architecture**: MVC (MVC Pattern).
--   **Database**: MySQL (via Sequelize).
+-   **Architecture**: Clean Architecture (Domain, UseCases, Infrastructure).
+-   **Database**: PostgreSQL (via Sequelize).
+-   **Authentication**: JWT-based Auth (Sign Up, Login, Protected Routes).
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
 -   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins/Bitbucket/CircleCI).
@@ -33,10 +34,10 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 
 ## 📂 Project Structure
 
-The project follows **MVC** principles.
-- **Model**: Database schemas and data logic.
-- **View**: Template engines or API responders.
-- **Controller**: Orchestrates flow between Model and View.
+The project follows **Clean Architecture** principles.
+- **Domain**: Pure business logic (Entities/Interfaces).
+- **Use Case**: Application-specific business rules.
+- **Infrastructure**: External concerns (DB, Messaging, Caching).
 
 ---
 
@@ -63,7 +64,7 @@ git init
 npm install
 
 # Start required services
-docker-compose up -d db redis
+docker-compose up -d db
 
 # Run the app in development mode
 npm run dev
@@ -80,21 +81,67 @@ npm test
 npm run test:coverage
 ```
 
-API is exposed via **REST**.
-A Swagger UI for API documentation is available at:
-- **URL**: `http://localhost:3000/api-docs` (Dynamic based on PORT)
+API is exposed via **GraphQL**.
+The Apollo Sandbox UI for API exploration and documentation is available natively, fully embedded for offline development:
+- **URL**: `http://localhost:3000/graphql` (Dynamic based on PORT)
 
-### 🛣️ User Endpoints:
-- `GET /api/users`: List all users.
-- `POST /api/users`: Create a new user.
-- `PATCH /api/users/:id`: Partially update a user.
-- `DELETE /api/users/:id`: Delete a user (Soft Delete).
+### 🔐 Authorization
+To access protected resolvers (Query: `getAllUsers`, Mutations: `updateUser`, `deleteUser`), you must provide a valid JWT token in the headers.
 
+**How to authenticate:**
+1. Use the REST login endpoint: `POST /api/auth/login` (with your email and password).
+2. Copy the `accessToken` from the response.
+3. In the Apollo Sandbox "HTTP Headers" tab (bottom section), add:
+```json
+{
+  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
+}
+```
+If you are opening `http://localhost:3000/graphql` in your browser, you can directly run the following in the Apollo Sandbox UI:
+
+**Query to get all users:**
+```graphql
+query GetAllUsers {
+  getAllUsers {
+    id
+    name
+    email
+  }
+}
+```
+
+**Mutation to create a user:**
+```graphql
+mutation CreateUser {
+  createUser(name: "John Doe", email: "john@example.com", password: "yourpassword123") {
+    id
+    name
+    email
+  }
+}
+```
+
+**Mutation to update a user (Protected):**
+```graphql
+mutation UpdateUser {
+  updateUser(id: "1", name: "John Updated") {
+    id
+    name
+    email
+  }
+}
+```
+
+**Mutation to delete a user (Protected):**
+```graphql
+mutation DeleteUser {
+  deleteUser(id: "1")
+}
+```
 
 ## ⚡ Caching
-This project uses **Redis** for caching.
-- **Client**: `ioredis`
-- **Connection**: Configured via `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` in `.env`.
+This project uses **Memory Cache** for in-memory caching.
+- **Client**: `node-cache`
 
 ## 📝 Logging
 This project uses **Winston** for structured logging.
@@ -111,7 +158,7 @@ To run the Node.js application locally while using Docker for the infrastructure
 
 ```bash
 # Start infrastructure
-docker-compose up -d db redis
+docker-compose up -d db
 
 # Start the application
 npm run dev
@@ -125,13 +172,12 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t nodejs-zz2 .
+docker build -t nodejs-circleci .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network nodejs-zz2_default \
+docker run -p 3000:3000 --network nodejs-circleci_default \
   -e DB_HOST=db \
-  -e REDIS_HOST=redis \
-  nodejs-zz2
+  nodejs-circleci
 ```
 ## 🚀 PM2 Deployment (VPS/EC2)
 This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
@@ -142,7 +188,7 @@ npm install
 2. **Start Infrastructure (DB, Redis, Kafka, etc.) in the background**
 *(This specifically starts the background services without running the application inside Docker, allowing PM2 to handle it).*
 ```bash
-docker-compose up -d db redis
+docker-compose up -d db
 ```
 3. **Wait 5-10s** for the database to fully initialize.
 4. **Deploy the App using PM2 in Cluster Mode**
@@ -156,7 +202,7 @@ npx pm2 logs
 ```
 6. Stop and remove the PM2 application
 ```bash
-npx pm2 delete nodejs-zz2
+npx pm2 delete nodejs-circleci
 ```
 7. Stop and remove the Docker infrastructure
 ```bash
@@ -173,7 +219,7 @@ docker-compose down
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **nodejs-zz2** and its specific architectural stack (MVC, MySQL, etc.).
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **nodejs-circleci** and its specific architectural stack (Clean Architecture, PostgreSQL, etc.).
 - **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor. 
   - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

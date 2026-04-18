@@ -1,22 +1,12 @@
 import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
 import { Server } from 'http';
-import sequelize from '@/config/database';
-import redisService from '@/config/redisClient';
+import sequelize from '@/infrastructure/database/database';
 
-jest.mock('@/config/database', () => {
+jest.mock('@/infrastructure/database/database', () => {
   return {
     __esModule: true,
     default: {
       close: jest.fn().mockResolvedValue(true),
-    },
-  };
-});
-
-jest.mock('@/config/redisClient', () => {
-  return {
-    __esModule: true,
-    default: {
-      quit: jest.fn().mockResolvedValue(true),
     },
   };
 });
@@ -74,8 +64,6 @@ describe('Graceful Shutdown', () => {
     expect(mockServer.close).toHaveBeenCalled();
 
     expect(sequelize.close).toHaveBeenCalled();
-
-    expect(redisService.quit).toHaveBeenCalled();
 
     expect(mockExit).toHaveBeenCalledWith(0);
   });
