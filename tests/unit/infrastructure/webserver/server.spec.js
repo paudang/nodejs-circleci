@@ -28,6 +28,7 @@ jest.mock('express', () => {
 jest.mock('@/infrastructure/log/logger', () => ({
   info: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
 }));
 
 jest.mock('@/utils/gracefulShutdown', () => jest.fn());
