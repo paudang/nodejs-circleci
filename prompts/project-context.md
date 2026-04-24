@@ -9,11 +9,11 @@ You are an expert working on **nodejs-circleci**.
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
-- **Language**: TypeScript
+- **Language**: JavaScript
 - **Architecture**: Clean Architecture
-- **Database**: PostgreSQL
-- **Communication Protocol**: GraphQL
-- **Caching**: Memory Cache
+- **Database**: MongoDB
+- **Communication Protocol**: Kafka
+- **Caching**: Redis
 - **Authentication**: JWT (Access & Refresh Tokens)
 
 ## High-Level Architecture
@@ -31,7 +31,6 @@ We use Clean Architecture. The project separates concerns into:
    - Validate and sanitize all inputs to prevent injection and XSS.
    - Never expose sensitive data (passwords, inner keys) in API responses.
 4. **Paths & Naming**:
-   - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
 Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the nodejs-circleci?"

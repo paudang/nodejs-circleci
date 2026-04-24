@@ -1,0 +1,64 @@
+const BaseConsumer = require('@/interfaces/messaging/baseConsumer');
+const logger = require('@/infrastructure/log/logger');
+
+jest.mock('@/infrastructure/log/logger');
+
+class TestConsumer extends BaseConsumer {
+  constructor() {
+    super();
+    this._topic = 'test-topic';
+  }
+  get topic() {
+    return this._topic;
+  }
+  get groupId() {
+    return 'test-group';
+  }
+  async handle(data) {
+    logger.info('Handled', data);
+  }
+}
+
+describe('BaseConsumer', () => {
+  let consumer;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    consumer = new TestConsumer();
+  });
+
+  it('should throw error if instantiated directly', () => {
+    expect(() => new BaseConsumer()).toThrow(
+      "Abstract class 'BaseConsumer' cannot be instantiated.",
+    );
+  });
+
+  it('should process a valid message', async () => {
+    const message = { value: Buffer.from(JSON.stringify({ test: 'data' })) };
+    await consumer.onMessage({ message });
+    expect(logger.info).toHaveBeenCalledWith('Handled', { test: 'data' });
+  });
+
+  it('should handle invalid JSON', async () => {
+    const message = { value: Buffer.from('invalid-json') };
+    await consumer.onMessage({ message });
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('[Kafka] Error processing message on topic test-topic:'),
+      expect.anything(),
+    );
+  });
+
+  it('should skip empty messages', async () => {
+    const message = { value: null };
+    await consumer.onMessage({ message });
+    expect(logger.info).not.toHaveBeenCalled();
+  });
+
+  it('should throw if topic, groupId or handle are not implemented', async () => {
+    class IncompleteConsumer extends BaseConsumer {}
+    const incomplete = new IncompleteConsumer();
+    expect(() => incomplete.topic).toThrow("Property 'topic' must be implemented");
+    expect(() => incomplete.groupId).toThrow("Property 'groupId' must be implemented");
+    await expect(incomplete.handle({})).rejects.toThrow("Method 'handle()' must be implemented");
+  });
+});

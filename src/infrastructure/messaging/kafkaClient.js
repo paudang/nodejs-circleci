@@ -1,0 +1,95 @@
+const { kafka } = require('../config/kafka');
+const logger = require('../log/logger');
+
+let producer = null;
+let consumer = null;
+let isConnected = false;
+let connectionPromise = null;
+
+const connectKafka = async (retries = 10) => {
+  if (connectionPromise) return connectionPromise;
+
+  connectionPromise = (async () => {
+    if (!producer) producer = kafka.producer();
+    if (!consumer) consumer = kafka.consumer({ groupId: 'test-group' });
+
+    let attempt = 0;
+    // Auto-register WelcomeEmailConsumer if it exists
+    // Note: Dynamic import used here for simplicity and to avoid startup crashes.
+    // In enterprise production, consider using Dependency Injection.
+    const WelcomeEmailConsumer = require('../../interfaces/messaging/consumers/instances/welcomeEmailConsumer');
+    while (attempt < retries) {
+      try {
+        await producer.connect();
+        await consumer.connect();
+        logger.info('[Kafka] Producer connected successfully');
+        logger.info('[Kafka] Consumer connected successfully');
+        isConnected = true;
+
+        try {
+          const welcomeConsumer = new WelcomeEmailConsumer();
+          await consumer.subscribe({ topic: welcomeConsumer.topic, fromBeginning: true });
+          logger.info(`[Kafka] Registered consumer for topic: ${welcomeConsumer.topic}`);
+
+          await consumer.run({
+            eachMessage: async (payload) => welcomeConsumer.onMessage(payload),
+          });
+        } catch {
+          // Fallback or no consumers found
+          await consumer.subscribe({ topic: 'user-topic', fromBeginning: true });
+          await consumer.run({
+            eachMessage: async ({ message }) => {
+              logger.info({ value: message.value.toString() });
+            },
+          });
+        }
+        return; // Success
+      } catch (error) {
+        attempt++;
+        logger.error(`[Kafka] Connection attempt ${attempt} failed:`, error.message);
+        if (attempt >= retries) {
+          throw error; // Rethrow after final attempt
+        }
+        await new Promise((res) => setTimeout(res, 3000)); // Wait 3s between retries
+      }
+    }
+  })();
+
+  return connectionPromise;
+};
+
+const sendMessage = async (topic, message, key) => {
+  if (connectionPromise) {
+    await connectionPromise;
+  }
+
+  if (!isConnected) {
+    throw new Error('[Kafka] Producer not connected. Check logs for connection errors.');
+  }
+
+  try {
+    await producer.send({
+      topic,
+      messages: [{ key, value: message }],
+    });
+
+    try {
+      const parsed = JSON.parse(message);
+      logger.info(
+        `[Kafka] Producer: Sent ${parsed.action} event for '${parsed.payload?.email || 'unknown'}'`,
+      );
+    } catch (error) {
+      logger.info(`[Kafka] Producer: Sent message to ${topic}`, error);
+    }
+  } catch (error) {
+    logger.error(`[Kafka] Failed to send message to ${topic}:`, error.message);
+    throw error;
+  }
+};
+
+const disconnectKafka = async () => {
+  if (producer) await producer.disconnect();
+  if (consumer) await consumer.disconnect();
+};
+
+module.exports = { connectKafka, sendMessage, disconnectKafka };

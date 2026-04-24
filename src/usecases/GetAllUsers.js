@@ -1,0 +1,33 @@
+const cacheService = require('../infrastructure/caching/redisClient');
+const logger = require('../infrastructure/log/logger');
+
+class GetAllUsers {
+  constructor(userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  async execute() {
+    const cacheKey = 'users:all';
+    try {
+      const cachedUsers = await cacheService.get(cacheKey);
+      if (cachedUsers) {
+        logger.info('Serving users from cache');
+        return cachedUsers;
+      }
+    } catch (error) {
+      logger.error('Cache error (get):', error);
+    }
+
+    const users = await this.userRepository.getUsers();
+
+    try {
+      await cacheService.set(cacheKey, users, 60);
+    } catch (error) {
+      logger.error('Cache error (set):', error);
+    }
+
+    return users;
+  }
+}
+
+module.exports = GetAllUsers;

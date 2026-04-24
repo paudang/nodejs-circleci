@@ -9,7 +9,7 @@ I am encountering an error in the nodejs-circleci application. Please help me di
 
 ## Context Variables
 - **Architecture**: Clean Architecture
-- **Language**: TypeScript
+- **Language**: JavaScript
 
 ## Guidelines for Fixing
 
@@ -24,5 +24,5 @@ When analyzing this error, please keep these project standards in mind:
    - Check if this is a connection issue (e.g., Database, Kafka, Redis) and see if our standard configuration or health checks provide hints.
 4. **Fix Suggestion**:
    - Explain *why* the error happened.
-   - Provide a targeted code fix matching our coding style (TypeScript, Clean Architecture).
+   - Provide a targeted code fix matching our coding style (JavaScript, Clean Architecture).
    - Only modify what is strictly necessary to solve the issue.

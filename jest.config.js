@@ -3,8 +3,9 @@ module.exports = {
   coverageDirectory: 'coverage',
   collectCoverageFrom: ['src/**/*.{js,ts}'],
   testMatch: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
+  transformIgnorePatterns: ['/node_modules/(?!.*uuid)'],
   testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/'],
-  preset: 'ts-jest',
+
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },

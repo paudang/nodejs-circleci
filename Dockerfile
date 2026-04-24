@@ -22,7 +22,7 @@ RUN npm ci --no-audit --no-fund || npm ci --no-audit --no-fund || npm ci --no-au
 COPY . .
 
 # Build for production
-RUN npm run build
+
 
 # ==========================================
 # Stage 2: Production
@@ -51,7 +51,7 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Copy built artifacts from builder
 
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src ./src
 
 
 # Copy other necessary files (like views if MVC)
@@ -65,4 +65,4 @@ RUN mkdir -p logs && chown -R node:node logs
 USER node
 
 # Start application directly with node (safe even without npm)
-CMD ["node", "dist/index.js"]
+CMD ["node", "src/index.js"]

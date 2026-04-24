@@ -1,0 +1,40 @@
+const GetUserById = require('@/usecases/GetUserById');
+
+jest.mock('@/infrastructure/caching/redisClient', () => ({
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
+}));
+
+describe('GetUserById Use Case', () => {
+  let userRepository;
+  let getUserById;
+
+  beforeEach(() => {
+    userRepository = {
+      findById: jest.fn(),
+    };
+    getUserById = new GetUserById(userRepository);
+  });
+
+  it('should return a user if found (Happy Path)', async () => {
+    const id = '1';
+    const user = { id, name: 'Test User', email: 'test@example.com' };
+    userRepository.findById.mockResolvedValue(user);
+
+    const result = await getUserById.execute(id);
+
+    expect(result).toEqual(user);
+    expect(userRepository.findById).toHaveBeenCalledWith(id);
+  });
+
+  it('should return null if user not found (Error Handling)', async () => {
+    const id = '999';
+    userRepository.findById.mockResolvedValue(null);
+
+    const result = await getUserById.execute(id);
+
+    expect(result).toBeNull();
+    expect(userRepository.findById).toHaveBeenCalledWith(id);
+  });
+});

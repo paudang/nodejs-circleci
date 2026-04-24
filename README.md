@@ -2,10 +2,10 @@
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
-![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
+![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow.svg)
 
 
-A production-ready Node.js microservice generated with **Clean Architecture** and **PostgreSQL**. 
+A production-ready Node.js microservice generated with **Clean Architecture** and **MongoDB**. 
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
 
 ---
@@ -15,7 +15,7 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 1.  **Initialize Git**: `git init` (Required for Husky hooks and security gates).
 2.  **Install Dependencies**: `npm install`.
 3.  **Configure Environment**: Copy `.env.example` to `.env`.
-4.  **Start Infrastructure**: `docker-compose up -d db`.
+4.  **Start Infrastructure**: `docker-compose up -d db redis kafka`.
 5.  **Run Development**: `npm run dev`.
 6.  **Verify Standards**: `npm run lint` and `npm test` (Enforce 80% coverage).
 7.  **Build & Deploy**: `npm run build` followed by `npm run deploy` (via PM2).
@@ -25,7 +25,7 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 ## 🚀 Key Features
 
 -   **Architecture**: Clean Architecture (Domain, UseCases, Infrastructure).
--   **Database**: PostgreSQL (via Sequelize).
+-   **Database**: MongoDB (via Mongoose).
 -   **Authentication**: JWT-based Auth (Sign Up, Login, Protected Routes).
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
@@ -64,7 +64,7 @@ git init
 npm install
 
 # Start required services
-docker-compose up -d db
+docker-compose up -d db redis kafka
 
 # Run the app in development mode
 npm run dev
@@ -81,67 +81,51 @@ npm test
 npm run test:coverage
 ```
 
-API is exposed via **GraphQL**.
-The Apollo Sandbox UI for API exploration and documentation is available natively, fully embedded for offline development:
-- **URL**: `http://localhost:3000/graphql` (Dynamic based on PORT)
+Microservices communication handled via **Kafka**.
+## 📡 Testing Kafka Asynchronous Flow
+This project demonstrates a production-ready Kafka flow:
+1. **Producer**: When a user is created, updated, or deleted via the API, a corresponding event (`USER_CREATED`, `USER_UPDATED`, `USER_DELETED`) is sent to `user-topic`.
+2. **Consumer**: `WelcomeEmailConsumer` listens to `user-topic` and simulates processing (e.g., sending an email on creation).
 
-### 🔐 Authorization
-To access protected resolvers (Query: `getAllUsers`, Mutations: `updateUser`, `deleteUser`), you must provide a valid JWT token in the headers.
-
-**How to authenticate:**
-1. Use the REST login endpoint: `POST /api/auth/login` (with your email and password).
-2. Copy the `accessToken` from the response.
-3. In the Apollo Sandbox "HTTP Headers" tab (bottom section), add:
-```json
-{
-  "Authorization": "Bearer YOUR_ACCESS_TOKEN_HERE"
-}
-```
-If you are opening `http://localhost:3000/graphql` in your browser, you can directly run the following in the Apollo Sandbox UI:
-
-**Query to get all users:**
-```graphql
-query GetAllUsers {
-  getAllUsers {
-    id
-    name
-    email
-  }
-}
+### How to verify:
+1. Ensure infrastructure is running: `docker-compose up -d db redis kafka`
+2. Start the app: `npm run dev`
+3. Trigger internal events:
+ 
+**Create User (Sign Up - Public):**
+```bash
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Kafka Tester", "email": "kafka@example.com", "password": "password123"}'
 ```
 
-**Mutation to create a user:**
-```graphql
-mutation CreateUser {
-  createUser(name: "John Doe", email: "john@example.com", password: "yourpassword123") {
-    id
-    name
-    email
-  }
-}
+**Update User (Protected - Requires Auth):**
+1. Login to get token: `POST /api/auth/login`
+2. Update user with token:
+```bash
+curl -X PATCH http://localhost:3000/api/users/1 \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Updated Name"}'
+```
+4. Observe the logs:
+```text
+[Kafka] Producer: Sent USER_CREATED event for 'kafka@example.com'
+[Kafka] Consumer: Received USER_CREATED. 
+[Kafka] Consumer: 📧 Sending welcome email to 'kafka@example.com'... Done!
 ```
 
-**Mutation to update a user (Protected):**
-```graphql
-mutation UpdateUser {
-  updateUser(id: "1", name: "John Updated") {
-    id
-    name
-    email
-  }
-}
-```
-
-**Mutation to delete a user (Protected):**
-```graphql
-mutation DeleteUser {
-  deleteUser(id: "1")
-}
-```
+### 🛠️ Kafka Troubleshooting
+If the connection or events are failing:
+1. **Check Docker**: Ensure Kafka container is running (`docker ps`).
+2. **Verify Broker**: `KAFKA_BROKER` in `.env` must match your host/port (standard: 9093).
+3. **Advertised Listeners**: If using Windows/WSL, check `docker-compose.yml` advertisers are correct.
+4. **Logs**: Check `docker compose logs -f kafka` for start-up errors.
 
 ## ⚡ Caching
-This project uses **Memory Cache** for in-memory caching.
-- **Client**: `node-cache`
+This project uses **Redis** for caching.
+- **Client**: `ioredis`
+- **Connection**: Configured via `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` in `.env`.
 
 ## 📝 Logging
 This project uses **Winston** for structured logging.
@@ -158,7 +142,7 @@ To run the Node.js application locally while using Docker for the infrastructure
 
 ```bash
 # Start infrastructure
-docker-compose up -d db
+docker-compose up -d db redis kafka
 
 # Start the application
 npm run dev
@@ -177,6 +161,8 @@ docker build -t nodejs-circleci .
 # Run Container (attached to the compose network)
 docker run -p 3000:3000 --network nodejs-circleci_default \
   -e DB_HOST=db \
+  -e REDIS_HOST=redis \
+  -e KAFKA_BROKER=kafka:29092 \
   nodejs-circleci
 ```
 ## 🚀 PM2 Deployment (VPS/EC2)
@@ -188,12 +174,11 @@ npm install
 2. **Start Infrastructure (DB, Redis, Kafka, etc.) in the background**
 *(This specifically starts the background services without running the application inside Docker, allowing PM2 to handle it).*
 ```bash
-docker-compose up -d db
+docker-compose up -d db redis kafka
 ```
 3. **Wait 5-10s** for the database to fully initialize.
 4. **Deploy the App using PM2 in Cluster Mode**
 ```bash
-npm run build
 npm run deploy
 ```
 5. **Check logs**
@@ -219,7 +204,7 @@ docker-compose down
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **nodejs-circleci** and its specific architectural stack (Clean Architecture, PostgreSQL, etc.).
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **nodejs-circleci** and its specific architectural stack (Clean Architecture, MongoDB, etc.).
 - **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor. 
   - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

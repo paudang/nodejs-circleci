@@ -3,10 +3,10 @@
 ## Project Context
 You are an expert working on **nodejs-circleci**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
-- **Language**: TypeScript
+- **Language**: JavaScript
 - **Architecture**: Clean Architecture
-- **Database**: PostgreSQL
-- **Communication**: GraphQL
+- **Database**: MongoDB
+- **Communication**: Kafka
 
 ## Excluded Files/Folders
 When indexing or searching the workspace, ignore the following paths to prevent context pollution:
@@ -27,14 +27,13 @@ When indexing or searching the workspace, ignore the following paths to prevent 
 ### 2. Error Handling
 - Do NOT use generic `Error`.
 - Use custom classes from `src/errors/` (e.g., `ApiError`, `NotFoundError`, `BadRequestError`).
-- Use `HTTP_STATUS` constants from `@/utils/httpCodes` for status codes.
+- Use `HTTP_STATUS` constants from `../utils/httpCodes.js` for status codes.
 
 ### 3. File Naming & Style
-- **Controllers**: camelCase (e.g., `userController.ts`).
-- **Services**: camelCase (e.g., `userService.ts`).
-- **Routes**: camelCase (e.g., `userRoutes.ts`).
-- **Imports**: Use path aliases (e.g., `@/services/...`) instead of relative paths.
-- **Typing**: Ensure strong typing for interfaces and DTOs. Do not use `any` unless absolutely necessary.
+- **Controllers**: camelCase (e.g., `userController.js`).
+- **Services**: camelCase (e.g., `userService.js`).
+- **Routes**: camelCase (e.g., `userRoutes.js`).
+- **Imports**: Use relative paths as dictated by the directory structure.
 
 ### 4. Architecture Standards
 - Enforce strict separation of concerns:

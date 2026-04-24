@@ -1,0 +1,31 @@
+const mongoose = require('mongoose');
+
+let logger;
+
+logger = require('../log/logger');
+
+const connectDB = async () => {
+  const dbHost = process.env.DB_HOST || 'localhost';
+  const dbPort = process.env.DB_PORT || '27017';
+  const dbName = process.env.DB_NAME || 'demo';
+  const mongoURI = process.env.MONGO_URI || `mongodb://${dbHost}:${dbPort}/${dbName}`;
+
+  let retries = 5;
+  while (retries) {
+    try {
+      await mongoose.connect(mongoURI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      logger.info('MongoDB Connected...');
+      break;
+    } catch (err) {
+      logger.error('MongoDB connection failed:', err);
+      retries -= 1;
+      logger.info(`Retries left: ${retries}. Waiting 5s...`);
+      await new Promise((res) => setTimeout(res, 5000));
+    }
+  }
+};
+
+module.exports = connectDB; // Export function to call in index.js

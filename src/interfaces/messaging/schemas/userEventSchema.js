@@ -1,0 +1,12 @@
+const { z } = require('zod');
+const { KAFKA_ACTIONS } = require('../../../utils/kafkaEvents');
+
+const UserEventSchema = z.object({
+  action: z.enum(Object.values(KAFKA_ACTIONS)),
+  payload: z.object({
+    id: z.union([z.string(), z.number()]),
+    email: z.string().email().optional(),
+  }),
+});
+
+module.exports = { UserEventSchema };
