@@ -14,31 +14,42 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=root
       - DB_NAME=demo
-      - DB_PORT=27017
+      - DB_PORT=5432
       - JWT_SECRET=your_jwt_secret_key_here_change_it
       - JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_here_change_it
       - JWT_EXPIRES_IN=1d
       - JWT_REFRESH_EXPIRES_IN=7d
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your_google_id}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your_google_secret}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-http://localhost:3000/api/auth/google/callback}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-your_github_id}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-your_github_secret}
+      - GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL:-http://localhost:3000/api/auth/github/callback}
+
   db:
-    image: mongo:latest
+    image: postgres:15
     restart: always
     environment:
-      MONGO_INITDB_DATABASE: demo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: demo
     ports:
-      - "${DB_PORT:-27017}:27017"
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - mongodb_data:/data/db
-
-  mongo-migrate:
-    image: node:22-slim
-    working_dir: /app
+      - ./flyway/sql:/docker-entrypoint-initdb.d
+  flyway:
+    image: flyway/flyway
+    command: -connectRetries=60 migrate
     volumes:
-      - .:/app
-    command: sh -c "npm install migrate-mongo && npm run migrate"
+      - ./flyway/sql:/flyway/sql
     environment:
-      - DB_HOST=db
-      - DB_NAME=demo
+      FLYWAY_URL: jdbc:postgresql://db:5432/demo
+      FLYWAY_USER: postgres
+      FLYWAY_PASSWORD: root
+      FLYWAY_BASELINE_ON_MIGRATE: "true"
     depends_on:
       - db
   kafka:
@@ -61,4 +72,4 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
 volumes:
-  mongodb_data:
+  postgresql_data:

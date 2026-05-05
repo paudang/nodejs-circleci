@@ -1,9 +1,10 @@
 module.exports = {
   testEnvironment: 'node',
+  testTimeout: 30000,
   coverageDirectory: 'coverage',
   collectCoverageFrom: ['src/**/*.{js,ts}'],
   testMatch: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
-  transformIgnorePatterns: ['/node_modules/(?!.*uuid)'],
+  transformIgnorePatterns: ['/node_modules/(?!axios|sequelize|@sequelize|uuid)'],
   testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/'],
 
   moduleNameMapper: {

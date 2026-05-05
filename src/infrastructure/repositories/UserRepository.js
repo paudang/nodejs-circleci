@@ -14,29 +14,44 @@ class UserRepository {
   }
 
   async findById(id) {
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findByPk(id);
     if (!user) return null;
-    return { id: user._id.toString(), name: user.name, email: user.email };
+    return { id: user.id || 0, name: user.name, email: user.email };
+  }
+
+  async findByEmail(email) {
+    const user = await UserModel.findOne({ where: { email } });
+    if (!user) return null;
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      googleId: user.googleId,
+      githubId: user.githubId,
+    };
   }
 
   async getUsers() {
-    const users = await UserModel.find();
+    const users = await UserModel.findAll();
     return users.map((user) => ({
-      id: user._id.toString(),
+      id: user.id,
       name: user.name,
       email: user.email,
     }));
   }
 
   async update(id, data) {
-    const user = await UserModel.findByIdAndUpdate(id, data, { new: true });
+    const user = await UserModel.findByPk(id);
     if (!user) return null;
-    return { id: user._id.toString(), name: user.name, email: user.email };
+    await user.update(data);
+    return { id: user.id || 0, name: user.name, email: user.email };
   }
 
   async delete(id) {
-    const result = await UserModel.findByIdAndDelete(id);
-    return !!result;
+    const user = await UserModel.findByPk(id);
+    if (!user) return false;
+    await user.destroy();
+    return true;
   }
 }
 

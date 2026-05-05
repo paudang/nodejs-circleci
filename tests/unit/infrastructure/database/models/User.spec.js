@@ -1,16 +1,19 @@
-const mongoose = require('mongoose');
+const { Model } = require('sequelize');
 
-jest.mock('mongoose', () => {
-  const mSchema = jest.fn();
-  const mModel = {
-    find: jest.fn(),
-    create: jest.fn(),
+jest.mock('sequelize', () => {
+  const mDataTypes = {
+    INTEGER: 'INTEGER',
+    STRING: 'STRING',
   };
-  return {
-    Schema: mSchema,
-    model: jest.fn().mockReturnValue(mModel),
+  const mModel = class {
+    static init = jest.fn();
+    static findAll = jest.fn();
+    static create = jest.fn();
   };
+  return { DataTypes: mDataTypes, Model: mModel };
 });
+
+jest.mock('@/infrastructure/database/database', () => ({}));
 
 describe('User Model', () => {
   beforeEach(() => {
@@ -21,18 +24,19 @@ describe('User Model', () => {
     const User = require('@/infrastructure/database/models/User');
     expect(User).toBeDefined();
 
-    expect(mongoose.model).toHaveBeenCalled();
+    // Sequelize init is called on the class
+    expect(Model.init).toHaveBeenCalled();
   });
 
   it('should handle model operations', async () => {
     const User = require('@/infrastructure/database/models/User');
     const data = { name: 'Test', email: 'test@example.com' };
 
-    User.create.mockResolvedValue({ id: '1', ...data });
-    User.find.mockResolvedValue([{ id: '1', ...data }]);
+    User.create.mockResolvedValue({ id: 1, ...data });
+    User.findAll.mockResolvedValue([{ id: 1, ...data }]);
 
     const user = await User.create(data);
     expect(user.name).toBe(data.name);
-    expect(await User.find()).toBeDefined();
+    expect(await User.findAll()).toBeDefined();
   });
 });

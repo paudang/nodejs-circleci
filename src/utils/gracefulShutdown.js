@@ -10,9 +10,9 @@ const setupGracefulShutdown = (server) => {
       }
       logger.info('HTTP server closed.');
       try {
-        const mongoose = require('mongoose');
-        await mongoose.connection.close(false);
-        logger.info('MongoDB connection closed.');
+        const sequelize = require('../infrastructure/database/database');
+        await sequelize.close();
+        logger.info('Database connection closed.');
         const redisService = require('../infrastructure/caching/redisClient');
         await redisService.quit();
         logger.info('Redis connection closed.');

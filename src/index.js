@@ -2,13 +2,13 @@ const startServer = require('./infrastructure/webserver/server');
 const logger = require('./infrastructure/log/logger');
 const { connectKafka } = require('./infrastructure/messaging/kafkaClient');
 // Database Sync
-const connectDB = require('./infrastructure/database/database');
+const sequelize = require('./infrastructure/database/database');
 
 const syncDatabase = async () => {
   let retries = 30;
   while (retries) {
     try {
-      await connectDB();
+      await sequelize.sync();
       logger.info('Database synced');
       // Start the web server after DB sync
       startServer();

@@ -3,7 +3,7 @@ const router = express.Router();
 const logger = require('../../infrastructure/log/logger');
 const HTTP_STATUS = require('../../utils/httpCodes');
 const ERROR_MESSAGES = require('../../utils/errorMessages');
-const mongoose = require('mongoose');
+const sequelize = require('../../infrastructure/database/database');
 
 router.get('/', async (req, res) => {
   const healthData = {
@@ -16,12 +16,8 @@ router.get('/', async (req, res) => {
   logger.info('Health Check');
 
   try {
-    if (mongoose.connection.readyState === 1) {
-      if (mongoose.connection.db && mongoose.connection.db.admin) {
-        await mongoose.connection.db.admin().ping();
-      }
-      healthData.database = 'connected';
-    }
+    await sequelize.authenticate();
+    healthData.database = 'connected';
   } catch (err) {
     healthData.database = 'error';
     healthData.status = 'DOWN';

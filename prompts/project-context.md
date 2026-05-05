@@ -3,15 +3,15 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: nodejs-circleci
-You are an expert working on **nodejs-circleci**.
+**Project Name**: zzzxx
+You are an expert working on **zzzxx**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
 - **Language**: JavaScript
 - **Architecture**: Clean Architecture
-- **Database**: MongoDB
+- **Database**: PostgreSQL
 - **Communication Protocol**: Kafka
 - **Caching**: Redis
 - **Authentication**: JWT (Access & Refresh Tokens)
@@ -33,4 +33,4 @@ We use Clean Architecture. The project separates concerns into:
 4. **Paths & Naming**:
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the nodejs-circleci?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzxx?"

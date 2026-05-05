@@ -1,6 +1,12 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../../infrastructure/database/models/User');
 const JwtService = require('../../../infrastructure/auth/jwtService');
+const { SocialLoginUseCase } = require('../../../usecases/auth/socialLoginUseCase');
+const {
+  GoogleProvider,
+  GitHubProvider,
+} = require('../../../infrastructure/auth/socialAuthService');
+const UserRepository = require('../../../infrastructure/repositories/UserRepository');
 const cacheService = require('../../../infrastructure/caching/redisClient');
 const logger = require('../../../infrastructure/log/logger');
 const HTTP_STATUS = require('../../../utils/httpCodes');
@@ -10,13 +16,18 @@ class AuthController {
     this.login = this.login.bind(this);
     this.refresh = this.refresh.bind(this);
     this.logout = this.logout.bind(this);
+    this.socialExchange = this.socialExchange.bind(this);
+    this.googleLogin = this.googleLogin.bind(this);
+    this.googleCallback = this.googleCallback.bind(this);
+    this.githubLogin = this.githubLogin.bind(this);
+    this.githubCallback = this.githubCallback.bind(this);
   }
 
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
 
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ where: { email } });
 
       if (!user) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Invalid credentials' });
@@ -123,6 +134,141 @@ class AuthController {
     } catch (error) {
       logger.error('Logout error:', error);
       next(error);
+    }
+  }
+
+  async socialExchange(req, res, next) {
+    try {
+      const { code, provider, redirectUri } = req.body;
+      if (!code || !provider) {
+        return res
+          .status(HTTP_STATUS.BAD_REQUEST)
+          .json({ message: 'Code and provider are required' });
+      }
+
+      let useCase;
+      const userRepository = new UserRepository();
+      if (provider === 'Google')
+        useCase = new SocialLoginUseCase(new GoogleProvider(), userRepository);
+      if (provider === 'GitHub')
+        useCase = new SocialLoginUseCase(new GitHubProvider(), userRepository);
+
+      if (!useCase) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Invalid social provider' });
+      }
+
+      const { user, accessToken, refreshToken } = await useCase.execute(code, redirectUri);
+      const userId = String(user.id || user._id);
+      const refreshJti = JwtService.decodeToken(refreshToken)?.jti;
+
+      // Store refresh token
+      const cacheKey = `refresh_tokens:${userId}`;
+      const activeTokens = (await cacheService.get(cacheKey)) || [];
+      activeTokens.push(refreshJti);
+      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
+
+      res.json({ token: accessToken, accessToken, refreshToken });
+    } catch (error) {
+      logger.error('Social exchange error:', error);
+      next(error);
+    }
+  }
+
+  async googleLogin(req, res) {
+    const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+    const options = {
+      redirect_uri:
+        process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback',
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      access_type: 'offline',
+      response_type: 'code',
+      prompt: 'consent',
+      scope: [
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email',
+      ].join(' '),
+      state: 'google',
+    };
+    const qs = new URLSearchParams(options);
+    res.redirect(`${rootUrl}?${qs.toString()}`);
+  }
+
+  async googleCallback(req, res, next) {
+    try {
+      const { code } = req.query;
+      const redirectUri =
+        process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/api/auth/google/callback';
+
+      const useCase = new SocialLoginUseCase(new GoogleProvider(), new UserRepository());
+      const { user, accessToken, refreshToken } = await useCase.execute(code, redirectUri);
+      const userId = String(user.id || user._id);
+      const refreshJti = JwtService.decodeToken(refreshToken)?.jti;
+
+      // Store refresh token
+      const cacheKey = `refresh_tokens:${userId}`;
+      const activeTokens = (await cacheService.get(cacheKey)) || [];
+      activeTokens.push(refreshJti);
+      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.redirect('/');
+    } catch (error) {
+      logger.error('Google callback error:', error);
+      res.redirect('/login?error=social_auth_failed');
+    }
+  }
+
+  async githubLogin(req, res) {
+    const rootUrl = 'https://github.com/login/oauth/authorize';
+    const options = {
+      client_id: process.env.GITHUB_CLIENT_ID,
+      redirect_uri:
+        process.env.GITHUB_CALLBACK_URL || 'http://localhost:3000/api/auth/github/callback',
+      scope: 'user:email',
+      state: 'github',
+    };
+    const qs = new URLSearchParams(options);
+    res.redirect(`${rootUrl}?${qs.toString()}`);
+  }
+
+  async githubCallback(req, res, next) {
+    try {
+      const { code } = req.query;
+
+      const useCase = new SocialLoginUseCase(new GitHubProvider(), new UserRepository());
+      const { user, accessToken, refreshToken } = await useCase.execute(code);
+      const userId = String(user.id || user._id);
+      const refreshJti = JwtService.decodeToken(refreshToken)?.jti;
+
+      // Store refresh token
+      const cacheKey = `refresh_tokens:${userId}`;
+      const activeTokens = (await cacheService.get(cacheKey)) || [];
+      activeTokens.push(refreshJti);
+      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
+
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.redirect('/');
+    } catch (error) {
+      logger.error('GitHub callback error:', error);
+      res.redirect('/login?error=social_auth_failed');
     }
   }
 }

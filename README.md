@@ -1,16 +1,16 @@
-# nodejs-circleci
+# zzzxx
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
 ![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow.svg)
 
 
-A production-ready Node.js microservice generated with **Clean Architecture** and **MongoDB**. 
+A production-ready Node.js microservice generated with **Clean Architecture** and **PostgreSQL**. 
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
 
 ---
 
-## 🚀 7-Step Production-Ready Process
+## 7-Step Production-Ready Process
 
 1.  **Initialize Git**: `git init` (Required for Husky hooks and security gates).
 2.  **Install Dependencies**: `npm install`.
@@ -22,10 +22,10 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 -   **Architecture**: Clean Architecture (Domain, UseCases, Infrastructure).
--   **Database**: MongoDB (via Mongoose).
+-   **Database**: PostgreSQL (via Sequelize).
 -   **Authentication**: JWT-based Auth (Sign Up, Login, Protected Routes).
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
@@ -112,29 +112,29 @@ curl -X PATCH http://localhost:3000/api/users/1 \
 ```text
 [Kafka] Producer: Sent USER_CREATED event for 'kafka@example.com'
 [Kafka] Consumer: Received USER_CREATED. 
-[Kafka] Consumer: 📧 Sending welcome email to 'kafka@example.com'... Done!
+[Kafka] Consumer: Sending welcome email to 'kafka@example.com'... Done!
 ```
 
-### 🛠️ Kafka Troubleshooting
+### Kafka Troubleshooting
 If the connection or events are failing:
 1. **Check Docker**: Ensure Kafka container is running (`docker ps`).
 2. **Verify Broker**: `KAFKA_BROKER` in `.env` must match your host/port (standard: 9093).
 3. **Advertised Listeners**: If using Windows/WSL, check `docker-compose.yml` advertisers are correct.
 4. **Logs**: Check `docker compose logs -f kafka` for start-up errors.
 
-## ⚡ Caching
+## Caching
 This project uses **Redis** for caching.
 - **Client**: `ioredis`
 - **Connection**: Configured via `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` in `.env`.
 
-## 📝 Logging
+## Logging
 This project uses **Winston** for structured logging.
 - **Development**: Logs are printed to the console.
 - **Production**: Logs are saved to files:
   - `error.log`: Only error level logs.
   - `combined.log`: All logs.
 
-## 🐳 Docker Deployment
+## Docker Deployment
 This project uses a **Multi-Stage Dockerfile** for optimized production images.
 
 ### 1. Running Locally (Development)
@@ -156,16 +156,16 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t nodejs-circleci .
+docker build -t zzzxx .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network nodejs-circleci_default \
+docker run -p 3000:3000 --network zzzxx_default \
   -e DB_HOST=db \
   -e REDIS_HOST=redis \
   -e KAFKA_BROKER=kafka:29092 \
-  nodejs-circleci
+  zzzxx
 ```
-## 🚀 PM2 Deployment (VPS/EC2)
+## PM2 Deployment (VPS/EC2)
 This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
 1. Install dependencies
 ```bash
@@ -187,7 +187,7 @@ npx pm2 logs
 ```
 6. Stop and remove the PM2 application
 ```bash
-npx pm2 delete nodejs-circleci
+npx pm2 delete zzzxx
 ```
 7. Stop and remove the Docker infrastructure
 ```bash
@@ -200,11 +200,11 @@ docker-compose down
 -   **Rate Limiting**: Protects against DDoS / Brute-force.
 -   **HPP**: Prevents HTTP Parameter Pollution attacks.
 
-## 🤖 AI-Native Development
+## AI-Native Development
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **nodejs-circleci** and its specific architectural stack (Clean Architecture, MongoDB, etc.).
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **zzzxx** and its specific architectural stack (Clean Architecture, PostgreSQL, etc.).
 - **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor. 
   - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

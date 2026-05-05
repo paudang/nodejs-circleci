@@ -32,6 +32,14 @@ describe('E2E User Tests', () => {
     authToken = response.body.accessToken || response.body.token;
   });
 
+  it('should fail social exchange with invalid code', async () => {
+    const response = await request(SERVER_URL)
+      .post('/api/auth/social/exchange')
+      .send({ code: 'invalid_code', provider: 'Google' });
+
+    expect([401, 500]).toContain(response.statusCode);
+  });
+
   it('should fetch users successfully', async () => {
     const response = await request(SERVER_URL)
       .get('/api/users')

@@ -1,11 +1,11 @@
-# Cursor AI Coding Rules for nodejs-circleci
+# Cursor AI Coding Rules for zzzxx
 
 ## Project Context
-You are an expert working on **nodejs-circleci**.
+You are an expert working on **zzzxx**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 - **Language**: JavaScript
 - **Architecture**: Clean Architecture
-- **Database**: MongoDB
+- **Database**: PostgreSQL
 - **Communication**: Kafka
 
 ## Excluded Files/Folders

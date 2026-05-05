@@ -24,7 +24,7 @@ class JwtService {
   static verifyToken(token) {
     try {
       return jwt.verify(token, this.SECRET);
-    } catch {
+    } catch (error) {
       return null;
     }
   }
@@ -32,7 +32,7 @@ class JwtService {
   static verifyRefreshToken(token) {
     try {
       return jwt.verify(token, this.REFRESH_SECRET);
-    } catch {
+    } catch (error) {
       return null;
     }
   }
@@ -40,7 +40,7 @@ class JwtService {
   static decodeToken(token) {
     try {
       return jwt.decode(token);
-    } catch {
+    } catch (error) {
       return null;
     }
   }

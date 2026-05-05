@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: nodejs-circleci API
+  title: zzzxx API
   version: 1.0.0
-  description: API documentation for nodejs-circleci
+  description: API documentation for zzzxx
 servers:
   - url: http://localhost:3000
     description: Local Server
@@ -135,6 +135,58 @@ paths:
                 properties:
                   message:
                     type: string
+  /api/auth/social/exchange:
+    post:
+      summary: Exchange social auth code for JWT tokens
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - provider
+              properties:
+                code:
+                  type: string
+                provider:
+                  type: string
+                  enum: [Google, GitHub]
+                redirectUri:
+                  type: string
+      responses:
+        '200':
+          description: Exchange successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        '401':
+          description: Invalid social profile or code
+  /api/auth/google:
+    get:
+      summary: Redirect to Google OAuth
+      tags:
+        - Auth
+      responses:
+        '302':
+          description: Redirect to Google
+  /api/auth/github:
+    get:
+      summary: Redirect to GitHub OAuth
+      tags:
+        - Auth
+      responses:
+        '302':
+          description: Redirect to GitHub
   /api/users:
     get:
       summary: Returns the list of all the users

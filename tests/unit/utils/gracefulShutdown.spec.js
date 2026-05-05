@@ -1,10 +1,8 @@
 const setupGracefulShutdown = require('@/utils/gracefulShutdown');
 
-jest.mock('mongoose', () => {
+jest.mock('@/infrastructure/database/database', () => {
   return {
-    connection: {
-      close: jest.fn().mockResolvedValue(true),
-    },
+    close: jest.fn().mockResolvedValue(true),
   };
 });
 
@@ -68,8 +66,8 @@ describe('Graceful Shutdown', () => {
 
     expect(mockServer.close).toHaveBeenCalled();
 
-    const mongoose = require('mongoose');
-    expect(mongoose.connection.close).toHaveBeenCalledWith(false);
+    const sequelize = require('@/infrastructure/database/database');
+    expect(sequelize.close).toHaveBeenCalled();
 
     const redisService = require('@/infrastructure/caching/redisClient');
     expect(redisService.quit).toHaveBeenCalled();
