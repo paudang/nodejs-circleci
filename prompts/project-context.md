@@ -3,18 +3,18 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: zzzxx
-You are an expert working on **zzzxx**.
+**Project Name**: zzzz
+You are an expert working on **zzzz**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
-- **Language**: JavaScript
+- **Language**: TypeScript
 - **Architecture**: Clean Architecture
 - **Database**: PostgreSQL
 - **Communication Protocol**: Kafka
-- **Caching**: Redis
 - **Authentication**: JWT (Access & Refresh Tokens)
+- **Resilience**: Timeout, CircuitBreaker
 
 ## High-Level Architecture
 We use Clean Architecture. The project separates concerns into:
@@ -26,11 +26,12 @@ We use Clean Architecture. The project separates concerns into:
 ## Core Standards
 1. **Testing**: We enforce > 80% coverage. Tests use Jest and the AAA (Arrange, Act, Assert) pattern.
 2. **Error Handling**: We use centralized custom errors (e.g., `ApiError`) and global error middleware. Status codes come from standard constants, not hardcoded numbers.
-3. **Security**: 
+3. **Security**:
    - Use `authMiddleware` for protected routes.
    - Validate and sanitize all inputs to prevent injection and XSS.
    - Never expose sensitive data (passwords, inner keys) in API responses.
 4. **Paths & Naming**:
+   - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzxx?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzz?"

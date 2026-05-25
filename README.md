@@ -1,11 +1,10 @@
-# zzzxx
+# zzzz
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
-![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow.svg)
+![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
 
-
-A production-ready Node.js microservice generated with **Clean Architecture** and **PostgreSQL**. 
+A production-ready Node.js microservice generated with **Clean Architecture** and **PostgreSQL**.
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
 
 ---
@@ -15,7 +14,7 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 1.  **Initialize Git**: `git init` (Required for Husky hooks and security gates).
 2.  **Install Dependencies**: `npm install`.
 3.  **Configure Environment**: Copy `.env.example` to `.env`.
-4.  **Start Infrastructure**: `docker-compose up -d db redis kafka`.
+4.  **Start Infrastructure**: `docker-compose up -d db kafka`.
 5.  **Run Development**: `npm run dev`.
 6.  **Verify Standards**: `npm run lint` and `npm test` (Enforce 80% coverage).
 7.  **Build & Deploy**: `npm run build` followed by `npm run deploy` (via PM2).
@@ -30,7 +29,6 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
 -   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins/Bitbucket/CircleCI).
-
 
 ## 📂 Project Structure
 
@@ -64,7 +62,7 @@ git init
 npm install
 
 # Start required services
-docker-compose up -d db redis kafka
+docker-compose up -d db kafka
 
 # Run the app in development mode
 npm run dev
@@ -88,10 +86,10 @@ This project demonstrates a production-ready Kafka flow:
 2. **Consumer**: `WelcomeEmailConsumer` listens to `user-topic` and simulates processing (e.g., sending an email on creation).
 
 ### How to verify:
-1. Ensure infrastructure is running: `docker-compose up -d db redis kafka`
+1. Ensure infrastructure is running: `docker-compose up -d db kafka`
 2. Start the app: `npm run dev`
 3. Trigger internal events:
- 
+
 **Create User (Sign Up - Public):**
 ```bash
 curl -X POST http://localhost:3000/api/users \
@@ -111,7 +109,7 @@ curl -X PATCH http://localhost:3000/api/users/1 \
 4. Observe the logs:
 ```text
 [Kafka] Producer: Sent USER_CREATED event for 'kafka@example.com'
-[Kafka] Consumer: Received USER_CREATED. 
+[Kafka] Consumer: Received USER_CREATED.
 [Kafka] Consumer: Sending welcome email to 'kafka@example.com'... Done!
 ```
 
@@ -121,11 +119,6 @@ If the connection or events are failing:
 2. **Verify Broker**: `KAFKA_BROKER` in `.env` must match your host/port (standard: 9093).
 3. **Advertised Listeners**: If using Windows/WSL, check `docker-compose.yml` advertisers are correct.
 4. **Logs**: Check `docker compose logs -f kafka` for start-up errors.
-
-## Caching
-This project uses **Redis** for caching.
-- **Client**: `ioredis`
-- **Connection**: Configured via `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` in `.env`.
 
 ## Logging
 This project uses **Winston** for structured logging.
@@ -142,7 +135,7 @@ To run the Node.js application locally while using Docker for the infrastructure
 
 ```bash
 # Start infrastructure
-docker-compose up -d db redis kafka
+docker-compose up -d db kafka
 
 # Start the application
 npm run dev
@@ -156,14 +149,13 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t zzzxx .
+docker build -t zzzz .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network zzzxx_default \
+docker run -p 3000:3000 --network zzzz_default \
   -e DB_HOST=db \
-  -e REDIS_HOST=redis \
   -e KAFKA_BROKER=kafka:29092 \
-  zzzxx
+  zzzz
 ```
 ## PM2 Deployment (VPS/EC2)
 This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
@@ -174,11 +166,12 @@ npm install
 2. **Start Infrastructure (DB, Redis, Kafka, etc.) in the background**
 *(This specifically starts the background services without running the application inside Docker, allowing PM2 to handle it).*
 ```bash
-docker-compose up -d db redis kafka
+docker-compose up -d db kafka
 ```
 3. **Wait 5-10s** for the database to fully initialize.
 4. **Deploy the App using PM2 in Cluster Mode**
 ```bash
+npm run build
 npm run deploy
 ```
 5. **Check logs**
@@ -187,7 +180,7 @@ npx pm2 logs
 ```
 6. Stop and remove the PM2 application
 ```bash
-npx pm2 delete zzzxx
+npx pm2 delete zzzz
 ```
 7. Stop and remove the Docker infrastructure
 ```bash
@@ -204,7 +197,7 @@ docker-compose down
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **zzzxx** and its specific architectural stack (Clean Architecture, PostgreSQL, etc.).
-- **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor. 
-  - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **zzzz** and its specific architectural stack (Clean Architecture, PostgreSQL, etc.).
+- **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor.
+- *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

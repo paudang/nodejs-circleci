@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'zzzxx',
-      script: './src/index.js', // Entry point
+      name: 'zzzz',
+      script: './dist/index.js', // Entry point
       instances: 'max', // Run in Cluster Mode to utilize all CPUs (Note: On Windows, cluster mode may throw `spawn wmic ENOENT` errors due to missing WMIC in Windows 11. To fix, change instances to 1, or install wmic)
       exec_mode: 'cluster',
       watch: false, // Disable watch in production
@@ -10,9 +10,6 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 3000,
-        REDIS_HOST: '127.0.0.1',
-        REDIS_PORT: 6379,
-        REDIS_PASSWORD: '',
         KAFKA_BROKER: '127.0.0.1:9093',
         KAFKAJS_NO_PARTITIONER_WARNING: 1,
         DB_HOST: '127.0.0.1',
@@ -24,6 +21,12 @@ module.exports = {
         JWT_REFRESH_SECRET: 'your_jwt_refresh_secret_here',
         JWT_EXPIRES_IN: '1h',
         JWT_REFRESH_EXPIRES_IN: '7d',
+        GOOGLE_CLIENT_ID: 'your_google_client_id',
+        GOOGLE_CLIENT_SECRET: 'your_google_client_secret',
+        GOOGLE_CALLBACK_URL: 'http://localhost:3000/api/auth/google/callback',
+        GITHUB_CLIENT_ID: 'your_github_client_id',
+        GITHUB_CLIENT_SECRET: 'your_github_client_secret',
+        GITHUB_CALLBACK_URL: 'http://localhost:3000/api/auth/github/callback',
       },
     },
   ],

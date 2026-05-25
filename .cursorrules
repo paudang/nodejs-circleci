@@ -1,9 +1,9 @@
-# Cursor AI Coding Rules for zzzxx
+# Cursor AI Coding Rules for zzzz
 
 ## Project Context
-You are an expert working on **zzzxx**.
+You are an expert working on **zzzz**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
-- **Language**: JavaScript
+- **Language**: TypeScript
 - **Architecture**: Clean Architecture
 - **Database**: PostgreSQL
 - **Communication**: Kafka
@@ -27,13 +27,14 @@ When indexing or searching the workspace, ignore the following paths to prevent 
 ### 2. Error Handling
 - Do NOT use generic `Error`.
 - Use custom classes from `src/errors/` (e.g., `ApiError`, `NotFoundError`, `BadRequestError`).
-- Use `HTTP_STATUS` constants from `../utils/httpCodes.js` for status codes.
+- Use `HTTP_STATUS` constants from `@/utils/httpCodes` for status codes.
 
 ### 3. File Naming & Style
-- **Controllers**: camelCase (e.g., `userController.js`).
-- **Services**: camelCase (e.g., `userService.js`).
-- **Routes**: camelCase (e.g., `userRoutes.js`).
-- **Imports**: Use relative paths as dictated by the directory structure.
+- **Controllers**: camelCase (e.g., `userController.ts`).
+- **Services**: camelCase (e.g., `userService.ts`).
+- **Routes**: camelCase (e.g., `userRoutes.ts`).
+- **Imports**: Use path aliases (e.g., `@/services/...`) instead of relative paths.
+- **Typing**: Ensure strong typing for interfaces and DTOs. Do not use `any` unless absolutely necessary.
 
 ### 4. Architecture Standards
 - Enforce strict separation of concerns:
@@ -43,7 +44,10 @@ When indexing or searching the workspace, ignore the following paths to prevent 
   - `infrastructure`: Frameworks, Database, Caching, and Web Server.
 - Dependencies point inward toward the `domain`.
 
-### 5. Security & Authentication
+### 5. Resilience & External Calls
+- **Resilience Patterns**: You have `Timeout, CircuitBreaker` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
+
+### 6. Security & Authentication
 - **Protected Routes**: When adding new routes, consider if they need `authMiddleware`.
 - **User Identity**: Extract user info from `req.user` (populated by middleware).
 - **Sensitive Data**: Never return passwords in API responses (ensure `.toJSON()` or DTOs handle this).
