@@ -15,7 +15,7 @@ Please provide the code implementation following these steps:
 3. **Use Case**: Implement the business logic handling the feature.
 4. **Adapter (Controller & Route)**: Create the necessary endpoints and validate input.
 5. **Infrastructure (Repository)**: Implement database queries or external service calls.
-5. **Resilience**: Wrap any external API calls or unstable integration logic with our built-in `Timeout, CircuitBreaker` utilities from `src/utils/resilience`.
+5. **Resilience**: Wrap any external API calls or unstable integration logic with our built-in `Timeout, Retry, CircuitBreaker` utilities from `src/utils/resilience`.
 6. **Testing**: Write comprehensive Jest unit tests covering the "Happy Path" and "Edge Cases/Errors" (AAA pattern). Remember, our coverage requirement is > 80%!
 
 Please provide the plan first so I can review it before we write the code.

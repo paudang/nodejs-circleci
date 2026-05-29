@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'zzzz',
+      name: 'nodejs-circleci',
       script: './dist/index.js', // Entry point
       instances: 'max', // Run in Cluster Mode to utilize all CPUs (Note: On Windows, cluster mode may throw `spawn wmic ENOENT` errors due to missing WMIC in Windows 11. To fix, change instances to 1, or install wmic)
       exec_mode: 'cluster',

@@ -1,7 +1,7 @@
-# Cursor AI Coding Rules for zzzz
+# Cursor AI Coding Rules for nodejs-circleci
 
 ## Project Context
-You are an expert working on **zzzz**.
+You are an expert working on **nodejs-circleci**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 - **Language**: TypeScript
 - **Architecture**: Clean Architecture
@@ -45,7 +45,7 @@ When indexing or searching the workspace, ignore the following paths to prevent 
 - Dependencies point inward toward the `domain`.
 
 ### 5. Resilience & External Calls
-- **Resilience Patterns**: You have `Timeout, CircuitBreaker` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
+- **Resilience Patterns**: You have `Timeout, Retry, CircuitBreaker` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
 
 ### 6. Security & Authentication
 - **Protected Routes**: When adding new routes, consider if they need `authMiddleware`.

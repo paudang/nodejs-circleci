@@ -1,33 +1,44 @@
 import winston from 'winston';
-import 'winston-daily-rotate-file';
+import { ElasticsearchTransport, ElasticsearchTransportOptions } from 'winston-elasticsearch';
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-  defaultMeta: { service: 'user-service' },
-  transports: [
-    new winston.transports.DailyRotateFile({
-      filename: 'logs/error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d',
-      level: 'error',
-    }),
-    new winston.transports.DailyRotateFile({
-      filename: 'logs/combined-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d',
-    }),
-  ],
+const { combine, timestamp, printf, colorize } = winston.format;
+
+const myFormat = printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} ${level}: ${stack || message}`;
 });
 
-logger.add(
+const transports: winston.transport[] = [
   new winston.transports.Console({
-    format: process.env.NODE_ENV !== 'production' ? winston.format.simple() : winston.format.json(),
+    format: combine(colorize(), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), myFormat),
   }),
-);
+];
+
+// ElasticSearch Integration (Automated Bulk Transport)
+const elasticUrl = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
+const esTransportOpts: ElasticsearchTransportOptions = {
+  level: 'info',
+  clientOpts: {
+    node: elasticUrl,
+    requestTimeout: 5000,
+    maxRetries: 2,
+  },
+  indexPrefix: 'my-app-logs',
+  indexSuffixPattern: 'YYYY.MM.DD',
+};
+const esTransport = new ElasticsearchTransport(esTransportOpts);
+esTransport.on('error', (err: Error) => {
+  // Prevent Winston from crashing the app if Elasticsearch is down
+  console.error('Elasticsearch Logger Error:', err.message);
+});
+transports.push(esTransport);
+
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
+  format:
+    process.env.NODE_ENV === 'production'
+      ? winston.format.combine(winston.format.timestamp(), winston.format.json())
+      : winston.format.combine(winston.format.colorize(), winston.format.timestamp(), myFormat),
+  transports: transports,
+});
 
 export default logger;

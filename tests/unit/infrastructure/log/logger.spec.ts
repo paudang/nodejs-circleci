@@ -11,6 +11,8 @@ jest.mock('winston', () => {
     timestamp: jest.fn(),
     json: jest.fn(),
     simple: jest.fn(),
+    printf: jest.fn(() => 'mockFormat'),
+    colorize: jest.fn(),
   };
   const transports = {
     Console: jest.fn(),
@@ -49,10 +51,10 @@ describe('Logger', () => {
   });
 
   it('should use JSON format in production environment', () => {
-    const winston = require('winston');
     jest.resetModules();
     process.env.NODE_ENV = 'production';
     require('@/infrastructure/log/logger');
+    const winston = require('winston');
     expect(winston.format.json).toHaveBeenCalled();
     process.env.NODE_ENV = 'test';
   });
