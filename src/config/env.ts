@@ -14,17 +14,9 @@ const envSchema = z.object({
   DB_PASSWORD: z.string(),
   DB_NAME: z.string(),
   DB_PORT: z.string().transform(Number),
-  KAFKA_BROKER: z.string(),
-  JWT_SECRET: z.string(),
-  JWT_EXPIRES_IN: z.string().default('15m'),
-  JWT_REFRESH_SECRET: z.string().default('your-secret-refresh-key'),
-  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
-  GOOGLE_CLIENT_ID: z.string(),
-  GOOGLE_CLIENT_SECRET: z.string(),
-  GOOGLE_CALLBACK_URL: z.string().optional(),
-  GITHUB_CLIENT_ID: z.string(),
-  GITHUB_CLIENT_SECRET: z.string(),
-  GITHUB_CALLBACK_URL: z.string().optional(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.string().transform(Number),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

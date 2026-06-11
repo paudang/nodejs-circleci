@@ -6,9 +6,6 @@ export class UserRepository {
     const userData = {
       name: user.name,
       email: user.email,
-      password: user.password,
-      googleId: user.googleId,
-      githubId: user.githubId,
     };
 
     const newUser = await UserModel.create(userData);
@@ -60,8 +57,6 @@ export class UserRepository {
       name: user.name,
       email: user.email,
       password: user.password,
-      googleId: user.googleId,
-      githubId: user.githubId,
     } as UserEntity;
   }
 }

@@ -4,6 +4,8 @@ import { HTTP_STATUS } from '@/utils/httpCodes';
 import { ERROR_MESSAGES } from '@/utils/errorMessages';
 import sequelize from '@/infrastructure/database/database';
 
+import { emailQueue } from '@/infrastructure/queues/emailQueue';
+
 const router = Router();
 
 router.get('/', async (req: Request, res: Response) => {
@@ -27,6 +29,11 @@ router.get('/', async (req: Request, res: Response) => {
   }
 
   res.status(HTTP_STATUS.OK).json(healthData);
+});
+
+router.post('/test-job', async (req: Request, res: Response) => {
+  await emailQueue.add('test-email', { msg: 'Hello from API' });
+  res.status(HTTP_STATUS.OK).json({ message: 'Job enqueued. Check /admin/queues' });
 });
 
 export default router;

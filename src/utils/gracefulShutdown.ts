@@ -1,11 +1,9 @@
 import { Server } from 'http';
 import logger from '@/infrastructure/log/logger';
 import sequelize from '@/infrastructure/database/database';
+import redisService from '@/infrastructure/caching/redisClient';
 
-export const setupGracefulShutdown = (
-  server: Server,
-  kafkaService: { disconnect: () => Promise<void> },
-) => {
+export const setupGracefulShutdown = (server: Server) => {
   const gracefulShutdown = async (signal: string) => {
     logger.info(`Received ${signal}. Shutting down gracefully...`);
     server.close(async (err: Error | undefined) => {
@@ -17,8 +15,8 @@ export const setupGracefulShutdown = (
       try {
         await sequelize.close();
         logger.info('Database connection closed.');
-        await kafkaService.disconnect();
-        logger.info('Kafka connection closed.');
+        await redisService.quit();
+        logger.info('Redis connection closed.');
         logger.info('Graceful shutdown fully completed.');
         process.exit(0);
       } catch (err) {

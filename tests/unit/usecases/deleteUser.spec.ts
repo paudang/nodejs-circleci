@@ -1,5 +1,6 @@
 import DeleteUser from '@/usecases/deleteUser';
 import { UserRepository } from '@/infrastructure/repositories/UserRepository';
+import cacheService from '@/infrastructure/caching/redisClient';
 
 jest.mock('@/infrastructure/repositories/UserRepository', () => ({
   UserRepository: jest.fn().mockImplementation(() => ({
@@ -9,6 +10,11 @@ jest.mock('@/infrastructure/repositories/UserRepository', () => ({
     update: jest.fn(),
     delete: jest.fn(),
   })),
+}));
+jest.mock('@/infrastructure/caching/redisClient', () => ({
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
 }));
 
 describe('DeleteUser UseCase', () => {
@@ -31,6 +37,8 @@ describe('DeleteUser UseCase', () => {
 
     expect(mockUserRepository.delete).toHaveBeenCalledWith(id);
     expect(result).toEqual(expectedResult);
+    expect(cacheService.del).toHaveBeenCalledWith('users:all');
+    expect(cacheService.del).toHaveBeenCalledWith(`user:${id}`);
   });
 
   it('should throw an error if repository fails', async () => {

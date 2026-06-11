@@ -5,26 +5,16 @@ services:
       - "${PORT:-3000}:3000"
     depends_on:
       - db
-      - kafka
     environment:
-      - KAFKA_BROKER=kafka:9092
-      - KAFKAJS_NO_PARTITIONER_WARNING=1
       - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
       - DB_HOST=db
       - DB_USER=postgres
       - DB_PASSWORD=root
       - DB_NAME=demo
       - DB_PORT=5432
-      - JWT_SECRET=your_jwt_secret_key_here_change_it
-      - JWT_REFRESH_SECRET=your_jwt_refresh_secret_key_here_change_it
-      - JWT_EXPIRES_IN=1d
-      - JWT_REFRESH_EXPIRES_IN=7d
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your_google_id}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-your_google_secret}
-      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL:-http://localhost:3000/api/auth/google/callback}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-your_github_id}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-your_github_secret}
-      - GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL:-http://localhost:3000/api/auth/github/callback}
 
   db:
     image: postgres:15
@@ -49,19 +39,10 @@ services:
       FLYWAY_BASELINE_ON_MIGRATE: "true"
     depends_on:
       - db
-  kafka:
-    image: bitnamilegacy/kafka:3.4.1-debian-12-r39
+  redis:
+    image: redis:alpine
+    restart: always
     ports:
-      - "${KAFKA_EXTERNAL_PORT:-9093}:9093"
-    environment:
-      - KAFKA_ENABLE_KRAFT=yes
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9094
-      - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:${KAFKA_PORT:-9093}
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:9093,CONTROLLER://:9094
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - "${REDIS_PORT:-6379}:6379"
 volumes:
   postgresql_data:

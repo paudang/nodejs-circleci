@@ -1,12 +1,12 @@
-# Cursor AI Coding Rules for nodejs-circleci
+# Cursor AI Coding Rules for ban-hang-sai-bg-job
 
 ## Project Context
-You are an expert working on **nodejs-circleci**.
+You are an expert working on **ban-hang-sai-bg-job**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 - **Language**: TypeScript
 - **Architecture**: Clean Architecture
 - **Database**: PostgreSQL
-- **Communication**: Kafka
+- **Communication**: GraphQL
 
 ## Excluded Files/Folders
 When indexing or searching the workspace, ignore the following paths to prevent context pollution:
@@ -29,6 +29,11 @@ When indexing or searching the workspace, ignore the following paths to prevent 
 - Use custom classes from `src/errors/` (e.g., `ApiError`, `NotFoundError`, `BadRequestError`).
 - Use `HTTP_STATUS` constants from `@/utils/httpCodes` for status codes.
 
+### 3. Logging & Observability
+- **NEVER use `console.log`, `console.error`, etc.**
+- Always use the centralized logger instance.
+- Import logger: `import { logger } from '@/infrastructure/log/logger';`
+
 ### 3. File Naming & Style
 - **Controllers**: camelCase (e.g., `userController.ts`).
 - **Services**: camelCase (e.g., `userService.ts`).
@@ -44,12 +49,16 @@ When indexing or searching the workspace, ignore the following paths to prevent 
   - `infrastructure`: Frameworks, Database, Caching, and Web Server.
 - Dependencies point inward toward the `domain`.
 
-### 5. Resilience & External Calls
-- **Resilience Patterns**: You have `Timeout, Retry, CircuitBreaker` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
+### 5. Database & Caching
+- **Database (`PostgreSQL`)**: Always use the provided database client/ORM. Do not instantiate multiple connections. Use transactions for multi-step write operations.
+- **Caching (`Redis`)**: Aggressively cache heavy GET requests or complex aggregations. Invalidate cache on mutations (POST/PUT/DELETE) that affect the cached data.
 
-### 6. Security & Authentication
-- **Protected Routes**: When adding new routes, consider if they need `authMiddleware`.
-- **User Identity**: Extract user info from `req.user` (populated by middleware).
-- **Sensitive Data**: Never return passwords in API responses (ensure `.toJSON()` or DTOs handle this).
+### 6. Resilience & External Calls
+- **Resilience Patterns**: You have `Retry` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
+
+### 7. Message Queues & Background Jobs
+- **Background Jobs (BullMQ)**: Offload heavy, slow, or retryable tasks (like sending emails, generating reports) to Redis-backed queues. Define the Job Producer in `queue` and the Consumer in `worker`.
+
+### 8. Security & Authentication
 - **Input Validation**: Always validate user input using schemas or controller-level checks.
 - **Sanitization**: Ensure inputs are sanitized before being used in DB queries (though our ORMs like Sequelize/Mongoose handle much of this).

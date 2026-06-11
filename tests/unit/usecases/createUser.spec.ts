@@ -1,5 +1,6 @@
 import CreateUser from '@/usecases/createUser';
 import { UserRepository } from '@/infrastructure/repositories/UserRepository';
+import cacheService from '@/infrastructure/caching/redisClient';
 
 jest.mock('@/infrastructure/repositories/UserRepository', () => ({
   UserRepository: jest.fn().mockImplementation(() => ({
@@ -9,6 +10,11 @@ jest.mock('@/infrastructure/repositories/UserRepository', () => ({
     update: jest.fn(),
     delete: jest.fn(),
   })),
+}));
+jest.mock('@/infrastructure/caching/redisClient', () => ({
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
 }));
 
 describe('CreateUser UseCase', () => {
@@ -36,6 +42,7 @@ describe('CreateUser UseCase', () => {
     expect(savedUser.name).toBe(name);
     expect(savedUser.email).toBe(email);
     expect(result).toEqual(expectedResult);
+    expect(cacheService.del).toHaveBeenCalledWith('users:all');
   });
 
   it('should throw an error if repository fails', async () => {

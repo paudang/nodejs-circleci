@@ -1,5 +1,4 @@
 import winston from 'winston';
-import { ElasticsearchTransport, ElasticsearchTransportOptions } from 'winston-elasticsearch';
 
 const { combine, timestamp, printf, colorize } = winston.format;
 
@@ -12,25 +11,6 @@ const transports: winston.transport[] = [
     format: combine(colorize(), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), myFormat),
   }),
 ];
-
-// ElasticSearch Integration (Automated Bulk Transport)
-const elasticUrl = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
-const esTransportOpts: ElasticsearchTransportOptions = {
-  level: 'info',
-  clientOpts: {
-    node: elasticUrl,
-    requestTimeout: 5000,
-    maxRetries: 2,
-  },
-  indexPrefix: 'my-app-logs',
-  indexSuffixPattern: 'YYYY.MM.DD',
-};
-const esTransport = new ElasticsearchTransport(esTransportOpts);
-esTransport.on('error', (err: Error) => {
-  // Prevent Winston from crashing the app if Elasticsearch is down
-  console.error('Elasticsearch Logger Error:', err.message);
-});
-transports.push(esTransport);
 
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),

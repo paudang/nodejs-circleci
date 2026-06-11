@@ -13,6 +13,12 @@ jest.mock('@/infrastructure/database/database', () => {
   };
 });
 
+jest.mock('@/infrastructure/queues/emailQueue', () => ({
+  emailQueue: {
+    add: jest.fn().mockResolvedValue({ id: '1' }),
+  },
+}));
+
 describe('Health Route', () => {
   let app: express.Express;
 
@@ -36,5 +42,11 @@ describe('Health Route', () => {
     expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
     expect(res.body.status).toBe('DOWN');
     expect(res.body.database).toBe('error');
+  });
+
+  it('should enqueue a test background job and return 200', async () => {
+    const res = await request(app).post('/health/test-job');
+    expect(res.status).toBe(HTTP_STATUS.OK);
+    expect(res.body.message).toBe('Job enqueued. Check /admin/queues');
   });
 });

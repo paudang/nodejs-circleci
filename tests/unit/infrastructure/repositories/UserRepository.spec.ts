@@ -48,7 +48,6 @@ describe('UserRepository', () => {
       expect(UserModel.create).toHaveBeenCalledWith({
         name: payload.name,
         email: payload.email,
-        password: payload.password,
       });
     });
 

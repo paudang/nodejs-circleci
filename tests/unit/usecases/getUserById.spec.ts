@@ -11,6 +11,12 @@ jest.mock('@/infrastructure/repositories/UserRepository', () => ({
   })),
 }));
 
+jest.mock('@/infrastructure/caching/redisClient', () => ({
+  get: jest.fn(),
+  set: jest.fn(),
+  del: jest.fn(),
+}));
+
 describe('GetUserById Use Case', () => {
   let getUserById: GetUserById;
   let userRepository: jest.Mocked<UserRepository>;

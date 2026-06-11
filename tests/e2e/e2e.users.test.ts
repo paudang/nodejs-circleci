@@ -4,63 +4,66 @@ const SERVER_URL = process.env.TEST_URL || `http://127.0.0.1:${process.env.PORT 
 
 describe('E2E User Tests', () => {
   let userId: string;
-  let authToken: string;
   const uniqueEmail = `test_${Date.now()}@example.com`;
-  const testPassword = 'password123';
 
-  it('should fail to fetch users without token (Protected)', async () => {
-    const response = await request(SERVER_URL).get('/api/users');
-    expect(response.statusCode).toBe(401);
-  });
-
-  it('should create a user successfully (Signup)', async () => {
-    const response = await request(SERVER_URL)
-      .post('/api/users')
-      .send({ name: 'Test User', email: uniqueEmail, password: testPassword });
-
-    expect([201, 202]).toContain(response.statusCode);
-    userId = response.body.id || response.body._id;
-  });
-
-  it('should login and obtain a JWT token', async () => {
-    const response = await request(SERVER_URL)
-      .post('/api/auth/login')
-      .send({ email: uniqueEmail, password: testPassword });
+  it('should create a user via GraphQL', async () => {
+    const query = `
+      mutation {
+        createUser(name: "Test User", email: "${uniqueEmail}") {
+          id
+          name
+          email
+        }
+      }
+    `;
+    const response = await request(SERVER_URL).post('/graphql').send({ query });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.accessToken || response.body.token).toBeDefined();
-    authToken = response.body.accessToken || response.body.token;
+    expect(response.body.errors).toBeUndefined();
+    userId = response.body.data.createUser.id;
+    expect(userId).toBeDefined();
   });
 
-  it('should fail social exchange with invalid code', async () => {
-    const response = await request(SERVER_URL)
-      .post('/api/auth/social/exchange')
-      .send({ code: 'invalid_code', provider: 'Google' });
+  it('should fetch all users via GraphQL', async () => {
+    const query = `{ getAllUsers { id name email } }`;
+    const response = await request(SERVER_URL).post('/graphql').send({ query });
 
-    expect([401, 500]).toContain(response.statusCode);
-  });
-
-  it('should fetch users successfully', async () => {
-    const response = await request(SERVER_URL)
-      .get('/api/users')
-      .set('Authorization', `Bearer ${authToken}`);
     expect(response.statusCode).toBe(200);
-    expect(Array.isArray(response.body)).toBe(true);
+    expect(Array.isArray(response.body.data.getAllUsers)).toBe(true);
+    const user = response.body.data.getAllUsers.find((u: any) => u.id === userId);
+    expect(user).toBeDefined();
   });
 
-  it('should update a user successfully', async () => {
+  it('should update a user via GraphQL', async () => {
+    const query = `
+      mutation {
+        updateUser(id: "${userId}", name: "Updated User") {
+          id
+          name
+        }
+      }
+    `;
     const response = await request(SERVER_URL)
-      .patch(`/api/users/${userId}`)
-      .set('Authorization', `Bearer ${authToken}`)
-      .send({ name: 'Updated User' });
+      .post('/graphql')
+      .set('Content-Type', 'application/json')
+      .send({ query });
 
-    expect([200, 202, 204]).toContain(response.statusCode);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data.updateUser.name).toBe('Updated User');
   });
 
-  it('should delete a user successfully', async () => {
+  it('should delete a user via GraphQL', async () => {
+    const query = `
+      mutation {
+        deleteUser(id: "${userId}")
+      }
+    `;
     const response = await request(SERVER_URL)
-      .delete(`/api/users/${userId}`)
-      .set('Authorization', `Bearer ${authToken}`);
-    expect([200, 202, 204]).toContain(response.statusCode);
+      .post('/graphql')
+      .set('Content-Type', 'application/json')
+      .send({ query });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.data.deleteUser).toBe(true);
   });
 });

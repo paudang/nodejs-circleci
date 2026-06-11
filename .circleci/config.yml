@@ -3,6 +3,8 @@ version: 2.1
 orbs:
   node: circleci/node@5.2.0
 
+  snyk: snyk/snyk@2.1.0
+
 executors:
   node-executor:
     docker:
@@ -37,6 +39,26 @@ jobs:
       - run: npm ci
       - run: npm run test:e2e
 
+  security_scan:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - snyk/scan:
+          fail-on-issues: true
+          severity-threshold: high
+
+  sonarqube_analysis:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: SonarQube Analysis
+          command: |
+            # Assuming sonar-scanner is available or run via npx
+            npx sonar-scanner
+
   build:
     executor: node-executor
     steps:
@@ -55,6 +77,16 @@ workflows:
           requires:
             - unit_test
 
+      - security_scan:
+          requires:
+            - unit_test
+      - sonarqube_analysis:
+          requires:
+            - unit_test
+
       - build:
           requires:
             - e2e_test
+
+            - security_scan
+            - sonarqube_analysis
