@@ -3,18 +3,18 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: zzzz
-You are an expert working on **zzzz**.
+**Project Name**: zzzzz
+You are an expert working on **zzzzz**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
-- **Language**: TypeScript
+- **Language**: JavaScript
 - **Architecture**: MVC
 - **Database**: MySQL
-- **Communication Protocol**: REST APIs
+- **Communication Protocol**: GraphQL
 - **Caching**: Redis
-- **Resilience**: CircuitBreaker, Timeout, Retry
+- **Resilience**: Retry, CircuitBreaker, Timeout
 - **Background Jobs**: BullMQ Task Queues
 - **Observability**: ELK Stack (Elasticsearch, Logstash, Kibana)
 
@@ -35,7 +35,6 @@ We use the MVC (Model-View-Controller) pattern.
    - NEVER use `console.log()`. Always use the centralized `logger` instance.
    - Include context (e.g., `userId`, `traceId`) in logs for Elasticsearch indexing.
 5. **Paths & Naming**:
-   - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzz?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzzz?"

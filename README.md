@@ -1,8 +1,8 @@
-# zzzz
+# zzzzz
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
-![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
+![JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow.svg)
 
 A production-ready Node.js microservice generated with **MVC** and **MySQL**.
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
@@ -95,16 +95,51 @@ npm test
 npm run test:coverage
 ```
 
-API is exposed via **REST**.
-A Swagger UI for API documentation is available at:
-- **URL**: `http://localhost:3000/api-docs` (Dynamic based on PORT)
+API is exposed via **GraphQL**.
+The Apollo Sandbox UI for API exploration and documentation is available natively, fully embedded for offline development:
+- **URL**: `http://localhost:3000/graphql` (Dynamic based on PORT)
 
-### User Endpoints:
-- `GET /api/users`: List all users.
-- `GET /api/users/:id`: Get a user by ID.
-- `POST /api/users`: Create a new user.
-- `PATCH /api/users/:id`: Partially update a user.
-- `DELETE /api/users/:id`: Delete a user (Soft Delete).
+If you are opening `http://localhost:3000/graphql` in your browser, you can directly run the following in the Apollo Sandbox UI:
+
+**Query to get all users:**
+```graphql
+query GetAllUsers {
+  getAllUsers {
+    id
+    name
+    email
+  }
+}
+```
+
+**Mutation to create a user:**
+```graphql
+mutation CreateUser {
+  createUser(name: "John Doe", email: "john@example.com") {
+    id
+    name
+    email
+  }
+}
+```
+
+**Mutation to update a user (Protected):**
+```graphql
+mutation UpdateUser {
+  updateUser(id: "1", name: "John Updated") {
+    id
+    name
+    email
+  }
+}
+```
+
+**Mutation to delete a user (Protected):**
+```graphql
+mutation DeleteUser {
+  deleteUser(id: "1")
+}
+```
 
 ## Caching
 This project uses **Redis** for caching.
@@ -140,13 +175,13 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t zzzz .
+docker build -t zzzzz .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network zzzz_default \
+docker run -p 3000:3000 --network zzzzz_default \
   -e DB_HOST=db \
   -e REDIS_HOST=redis \
-  zzzz
+  zzzzz
 ```
 ## PM2 Deployment (VPS/EC2)
 This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
@@ -163,7 +198,6 @@ docker-compose -f docker-compose.elk.yml up -d
 3. **Wait 5-10s** for the database to fully initialize.
 4. **Deploy the App using PM2 in Cluster Mode**
 ```bash
-npm run build
 npm run deploy
 ```
 5. **Check logs**
@@ -172,7 +206,7 @@ npx pm2 logs
 ```
 6. Stop and remove the PM2 application
 ```bash
-npx pm2 delete zzzz
+npx pm2 delete zzzzz
 ```
 7. Stop and remove the Docker infrastructure
 ```bash
@@ -190,7 +224,7 @@ docker-compose -f docker-compose.elk.yml down
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **zzzz** and its specific architectural stack (MVC, MySQL, etc.).
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **zzzzz** and its specific architectural stack (MVC, MySQL, etc.).
 - **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor.
 - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

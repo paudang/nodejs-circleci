@@ -52,7 +52,7 @@ resource "aws_instance" "app" {
               usermod -aG docker ec2-user
               
               # Note: For production, you would pull your image and run it here
-              # For TypeScript: npm run build && node dist/index.js
+              # For JavaScript: node src/index.js
               # docker run -d -p 3000:3000 my-node-app:latest
               EOF
 
