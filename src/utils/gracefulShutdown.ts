@@ -1,7 +1,7 @@
 import { Server } from 'http';
-import logger from '@/infrastructure/log/logger';
-import sequelize from '@/infrastructure/database/database';
-import redisService from '@/infrastructure/caching/redisClient';
+import logger from '@/utils/logger';
+import sequelize from '@/config/database';
+import redisService from '@/config/redisClient';
 
 export const setupGracefulShutdown = (server: Server) => {
   const gracefulShutdown = async (signal: string) => {

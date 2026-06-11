@@ -1,13 +1,10 @@
-# ban-hang-sai-bg-job
+# zzzz
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
 ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
 
-[![Snyk Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/yourusername/ban-hang-sai-bg-job?style=flat-square)](https://snyk.io/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ban-hang-sai-bg-job&metric=alert_status)](https://sonarcloud.io/)
-
-A production-ready Node.js microservice generated with **Clean Architecture** and **PostgreSQL**.
+A production-ready Node.js microservice generated with **MVC** and **MySQL**.
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
 
 ---
@@ -26,20 +23,19 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 
 ## Key Features
 
--   **Architecture**: Clean Architecture (Domain, UseCases, Infrastructure).
--   **Database**: PostgreSQL (via Sequelize).
+-   **Architecture**: MVC (MVC Pattern).
+-   **Database**: MySQL (via Sequelize).
 
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
 -   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins/Bitbucket/CircleCI).
--   **Enterprise Hardening**: SonarCloud SAST, Security Policies.
 
 ## 📂 Project Structure
 
-The project follows **Clean Architecture** principles.
-- **Domain**: Pure business logic (Entities/Interfaces).
-- **Use Case**: Application-specific business rules.
-- **Infrastructure**: External concerns (DB, Messaging, Caching).
+The project follows **MVC** principles.
+- **Model**: Database schemas and data logic.
+- **View**: Template engines or API responders.
+- **Controller**: Orchestrates flow between Model and View.
 
 ---
 
@@ -68,9 +64,25 @@ npm install # (or pnpm install / yarn install)
 # Start required services
 docker-compose up -d db redis
 
+# (Optional) Start ELK Stack for Centralized Logging
+docker-compose -f docker-compose.elk.yml up -d
+
 # Run the app in development mode
 npm run dev # (or pnpm dev / yarn dev)
 ```
+
+### 📊 Observability (ELK Stack)
+This project is configured with a localized **Elasticsearch & Kibana** stack for centralized logging.
+When you run `docker-compose -f docker-compose.elk.yml up -d`, the following services will start:
+- **Elasticsearch**: `http://localhost:9200`
+- **Kibana UI**: `http://localhost:5601`
+
+**How to test logs locally (First-Time Setup):**
+1. In your app code, simply use `logger.info('message', { event: 'test' })`. (Kibana requires at least one log to exist before it lets you view them).
+2. Open Kibana (`http://localhost:5601`) in your browser. Click **"Explore on my own"** if greeted by the Welcome screen.
+3. Open the menu (top left) and navigate to **Management > Stack Management > Data Views**.
+4. Click **Create data view**. Enter `my-app-logs*` in both the Name and Index pattern fields.
+5. Save it, then go to **Analytics > Discover** to see your logs in real-time.
 
 ### 4. Quality & Standards
 ```bash
@@ -83,51 +95,16 @@ npm test
 npm run test:coverage
 ```
 
-API is exposed via **GraphQL**.
-The Apollo Sandbox UI for API exploration and documentation is available natively, fully embedded for offline development:
-- **URL**: `http://localhost:3000/graphql` (Dynamic based on PORT)
+API is exposed via **REST**.
+A Swagger UI for API documentation is available at:
+- **URL**: `http://localhost:3000/api-docs` (Dynamic based on PORT)
 
-If you are opening `http://localhost:3000/graphql` in your browser, you can directly run the following in the Apollo Sandbox UI:
-
-**Query to get all users:**
-```graphql
-query GetAllUsers {
-  getAllUsers {
-    id
-    name
-    email
-  }
-}
-```
-
-**Mutation to create a user:**
-```graphql
-mutation CreateUser {
-  createUser(name: "John Doe", email: "john@example.com") {
-    id
-    name
-    email
-  }
-}
-```
-
-**Mutation to update a user (Protected):**
-```graphql
-mutation UpdateUser {
-  updateUser(id: "1", name: "John Updated") {
-    id
-    name
-    email
-  }
-}
-```
-
-**Mutation to delete a user (Protected):**
-```graphql
-mutation DeleteUser {
-  deleteUser(id: "1")
-}
-```
+### User Endpoints:
+- `GET /api/users`: List all users.
+- `GET /api/users/:id`: Get a user by ID.
+- `POST /api/users`: Create a new user.
+- `PATCH /api/users/:id`: Partially update a user.
+- `DELETE /api/users/:id`: Delete a user (Soft Delete).
 
 ## Caching
 This project uses **Redis** for caching.
@@ -163,13 +140,13 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t ban-hang-sai-bg-job .
+docker build -t zzzz .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network ban-hang-sai-bg-job_default \
+docker run -p 3000:3000 --network zzzz_default \
   -e DB_HOST=db \
   -e REDIS_HOST=redis \
-  ban-hang-sai-bg-job
+  zzzz
 ```
 ## PM2 Deployment (VPS/EC2)
 This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
@@ -181,6 +158,7 @@ npm install # (or pnpm install / yarn install)
 *(This specifically starts the background services without running the application inside Docker, allowing PM2 to handle it).*
 ```bash
 docker-compose up -d db redis
+docker-compose -f docker-compose.elk.yml up -d
 ```
 3. **Wait 5-10s** for the database to fully initialize.
 4. **Deploy the App using PM2 in Cluster Mode**
@@ -194,11 +172,12 @@ npx pm2 logs
 ```
 6. Stop and remove the PM2 application
 ```bash
-npx pm2 delete ban-hang-sai-bg-job
+npx pm2 delete zzzz
 ```
 7. Stop and remove the Docker infrastructure
 ```bash
 docker-compose down
+docker-compose -f docker-compose.elk.yml down
 ```
 
 ## 🔒 Security Features
@@ -207,17 +186,11 @@ docker-compose down
 -   **Rate Limiting**: Protects against DDoS / Brute-force.
 -   **HPP**: Prevents HTTP Parameter Pollution attacks.
 
-### Enterprise Hardening (Big Tech Standard)
--   **Snyk SCA**: Run `npm run snyk:test` for dependency scanning.
--   **SonarCloud**: Automated SAST on every Push/PR.
--   **Digital Guardians**: Recommended Gitleaks integration for secret protection.
--   **Security Policy**: Standard `SECURITY.md` for vulnerability reporting.
-
 ## AI-Native Development
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **ban-hang-sai-bg-job** and its specific architectural stack (Clean Architecture, PostgreSQL, etc.).
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **zzzz** and its specific architectural stack (MVC, MySQL, etc.).
 - **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor.
 - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

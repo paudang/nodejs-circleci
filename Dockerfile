@@ -55,6 +55,9 @@ COPY --from=builder /app/dist ./dist
 
 # Copy other necessary files (like views if MVC)
 
+COPY --from=builder /app/src/views ./dist/views
+COPY --from=builder /app/public ./public
+
 EXPOSE 3000
 
 # Create logs directory and give permissions to node user

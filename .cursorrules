@@ -1,12 +1,12 @@
-# Cursor AI Coding Rules for ban-hang-sai-bg-job
+# Cursor AI Coding Rules for zzzz
 
 ## Project Context
-You are an expert working on **ban-hang-sai-bg-job**.
+You are an expert working on **zzzz**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 - **Language**: TypeScript
-- **Architecture**: Clean Architecture
-- **Database**: PostgreSQL
-- **Communication**: GraphQL
+- **Architecture**: MVC
+- **Database**: MySQL
+- **Communication**: REST APIs
 
 ## Excluded Files/Folders
 When indexing or searching the workspace, ignore the following paths to prevent context pollution:
@@ -33,6 +33,7 @@ When indexing or searching the workspace, ignore the following paths to prevent 
 - **NEVER use `console.log`, `console.error`, etc.**
 - Always use the centralized logger instance.
 - Import logger: `import { logger } from '@/infrastructure/log/logger';`
+- This project integrates with the ELK stack. Ensure logs have contextual data (e.g., `logger.error('Message', { userId, traceId })`) so they can be indexed in Elasticsearch.
 
 ### 3. File Naming & Style
 - **Controllers**: camelCase (e.g., `userController.ts`).
@@ -42,19 +43,17 @@ When indexing or searching the workspace, ignore the following paths to prevent 
 - **Typing**: Ensure strong typing for interfaces and DTOs. Do not use `any` unless absolutely necessary.
 
 ### 4. Architecture Standards
-- Enforce strict separation of concerns:
-  - `domain`: Entities and enterprise business rules.
-  - `usecases`: Application business rules.
-  - `interfaces`: Controllers and Routes.
-  - `infrastructure`: Frameworks, Database, Caching, and Web Server.
-- Dependencies point inward toward the `domain`.
+- Enforce MVC standards:
+  - `models`: Data layer.
+  - `controllers`: Request handlers and business logic.
+  - `routes`: Define endpoints routing to controllers.
 
 ### 5. Database & Caching
-- **Database (`PostgreSQL`)**: Always use the provided database client/ORM. Do not instantiate multiple connections. Use transactions for multi-step write operations.
+- **Database (`MySQL`)**: Always use the provided database client/ORM. Do not instantiate multiple connections. Use transactions for multi-step write operations.
 - **Caching (`Redis`)**: Aggressively cache heavy GET requests or complex aggregations. Invalidate cache on mutations (POST/PUT/DELETE) that affect the cached data.
 
 ### 6. Resilience & External Calls
-- **Resilience Patterns**: You have `Retry` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
+- **Resilience Patterns**: You have `CircuitBreaker, Timeout, Retry` enabled in `src/utils/resilience`. Always wrap unstable external API calls or database queries in these wrappers to prevent cascading failures.
 
 ### 7. Message Queues & Background Jobs
 - **Background Jobs (BullMQ)**: Offload heavy, slow, or retryable tasks (like sending emails, generating reports) to Redis-backed queues. Define the Job Producer in `queue` and the Consumer in `worker`.

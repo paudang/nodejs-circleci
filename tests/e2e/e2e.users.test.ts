@@ -6,64 +6,31 @@ describe('E2E User Tests', () => {
   let userId: string;
   const uniqueEmail = `test_${Date.now()}@example.com`;
 
-  it('should create a user via GraphQL', async () => {
-    const query = `
-      mutation {
-        createUser(name: "Test User", email: "${uniqueEmail}") {
-          id
-          name
-          email
-        }
-      }
-    `;
-    const response = await request(SERVER_URL).post('/graphql').send({ query });
-
-    expect(response.statusCode).toBe(200);
-    expect(response.body.errors).toBeUndefined();
-    userId = response.body.data.createUser.id;
-    expect(userId).toBeDefined();
-  });
-
-  it('should fetch all users via GraphQL', async () => {
-    const query = `{ getAllUsers { id name email } }`;
-    const response = await request(SERVER_URL).post('/graphql').send({ query });
-
-    expect(response.statusCode).toBe(200);
-    expect(Array.isArray(response.body.data.getAllUsers)).toBe(true);
-    const user = response.body.data.getAllUsers.find((u: any) => u.id === userId);
-    expect(user).toBeDefined();
-  });
-
-  it('should update a user via GraphQL', async () => {
-    const query = `
-      mutation {
-        updateUser(id: "${userId}", name: "Updated User") {
-          id
-          name
-        }
-      }
-    `;
+  it('should create a user successfully (Signup)', async () => {
     const response = await request(SERVER_URL)
-      .post('/graphql')
-      .set('Content-Type', 'application/json')
-      .send({ query });
+      .post('/api/users')
+      .send({ name: 'Test User', email: uniqueEmail });
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.data.updateUser.name).toBe('Updated User');
+    expect([201, 202]).toContain(response.statusCode);
+    userId = response.body.id || response.body._id;
   });
 
-  it('should delete a user via GraphQL', async () => {
-    const query = `
-      mutation {
-        deleteUser(id: "${userId}")
-      }
-    `;
-    const response = await request(SERVER_URL)
-      .post('/graphql')
-      .set('Content-Type', 'application/json')
-      .send({ query });
-
+  it('should fetch users successfully', async () => {
+    const response = await request(SERVER_URL).get('/api/users');
     expect(response.statusCode).toBe(200);
-    expect(response.body.data.deleteUser).toBe(true);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('should update a user successfully', async () => {
+    const response = await request(SERVER_URL)
+      .patch(`/api/users/${userId}`)
+      .send({ name: 'Updated User' });
+
+    expect([200, 202, 204]).toContain(response.statusCode);
+  });
+
+  it('should delete a user successfully', async () => {
+    const response = await request(SERVER_URL).delete(`/api/users/${userId}`);
+    expect([200, 202, 204]).toContain(response.statusCode);
   });
 });

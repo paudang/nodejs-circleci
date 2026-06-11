@@ -1,6 +1,6 @@
 # Troubleshoot Error
 
-I am encountering an error in the ban-hang-sai-bg-job application. Please help me diagnose and fix it based on our architectural standards.
+I am encountering an error in the zzzz application. Please help me diagnose and fix it based on our architectural standards.
 
 ## The Error Log / Issue Description
 \`\`\`
@@ -8,7 +8,7 @@ I am encountering an error in the ban-hang-sai-bg-job application. Please help m
 \`\`\`
 
 ## Context Variables
-- **Architecture**: Clean Architecture
+- **Architecture**: MVC
 - **Language**: TypeScript
 
 ## Guidelines for Fixing
@@ -22,8 +22,8 @@ When analyzing this error, please keep these project standards in mind:
    - Verify that appropriate status codes from `httpCodes` are being used correctly, rather than generic 500s unless unexpected.
 3. **Dependencies & Resilience**:
    - Check if this is a connection issue (e.g., Database, Kafka, Redis) and see if our standard configuration or health checks provide hints.
-   - If the error is due to an external service timeout or instability, consider recommending our built-in `Retry` utilities from `src/utils/resilience`.
+   - If the error is due to an external service timeout or instability, consider recommending our built-in `CircuitBreaker, Timeout, Retry` utilities from `src/utils/resilience`.
 4. **Fix Suggestion**:
    - Explain *why* the error happened.
-   - Provide a targeted code fix matching our coding style (TypeScript, Clean Architecture).
+   - Provide a targeted code fix matching our coding style (TypeScript, MVC).
    - Only modify what is strictly necessary to solve the issue.

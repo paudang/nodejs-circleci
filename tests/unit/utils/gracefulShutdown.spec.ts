@@ -1,9 +1,9 @@
 import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
 import { Server } from 'http';
-import sequelize from '@/infrastructure/database/database';
-import redisService from '@/infrastructure/caching/redisClient';
+import sequelize from '@/config/database';
+import redisService from '@/config/redisClient';
 
-jest.mock('@/infrastructure/database/database', () => {
+jest.mock('@/config/database', () => {
   return {
     __esModule: true,
     default: {
@@ -12,7 +12,7 @@ jest.mock('@/infrastructure/database/database', () => {
   };
 });
 
-jest.mock('@/infrastructure/caching/redisClient', () => {
+jest.mock('@/config/redisClient', () => {
   return {
     __esModule: true,
     default: {

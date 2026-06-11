@@ -1,6 +1,6 @@
 import { withRetry } from '@/utils/resilience/retry';
 
-jest.mock('@/infrastructure/log/logger', () => ({
+jest.mock('@/utils/logger', () => ({
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),

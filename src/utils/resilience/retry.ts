@@ -1,4 +1,4 @@
-import logger from '@/infrastructure/log/logger';
+import logger from '@/utils/logger';
 
 /**
  * Retries an asynchronous operation with exponential backoff and jitter.

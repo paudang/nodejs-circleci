@@ -3,26 +3,26 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: ban-hang-sai-bg-job
-You are an expert working on **ban-hang-sai-bg-job**.
+**Project Name**: zzzz
+You are an expert working on **zzzz**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
 - **Language**: TypeScript
-- **Architecture**: Clean Architecture
-- **Database**: PostgreSQL
-- **Communication Protocol**: GraphQL
+- **Architecture**: MVC
+- **Database**: MySQL
+- **Communication Protocol**: REST APIs
 - **Caching**: Redis
-- **Resilience**: Retry
+- **Resilience**: CircuitBreaker, Timeout, Retry
 - **Background Jobs**: BullMQ Task Queues
+- **Observability**: ELK Stack (Elasticsearch, Logstash, Kibana)
 
 ## High-Level Architecture
-We use Clean Architecture. The project separates concerns into:
-- `src/domain`: Core entities and rules. No external dependencies.
-- `src/usecases`: Application business logic.
-- `src/interfaces`: Adapters (Controllers, Routes) that mediate between the outside world and use cases.
-- `src/infrastructure`: External tools (Database, Web Server, Config, Caching).
+We use the MVC (Model-View-Controller) pattern.
+- `src/models`: Database schemas/models.
+- `src/controllers`: Handling incoming requests and implementing business logic.
+- `src/routes`: API endpoints mapped to controllers.
 
 ## Core Standards
 1. **Testing**: We enforce > 80% coverage. Tests use Jest and the AAA (Arrange, Act, Assert) pattern.
@@ -33,9 +33,9 @@ We use Clean Architecture. The project separates concerns into:
    - Never expose sensitive data (passwords, inner keys) in API responses.
 4. **Logging & Observability**:
    - NEVER use `console.log()`. Always use the centralized `logger` instance.
-
+   - Include context (e.g., `userId`, `traceId`) in logs for Elasticsearch indexing.
 5. **Paths & Naming**:
    - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the ban-hang-sai-bg-job?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzz?"
